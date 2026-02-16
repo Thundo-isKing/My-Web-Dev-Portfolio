@@ -1,5 +1,25 @@
 // Mouse-reactive glitter movement
 document.addEventListener('DOMContentLoaded', () => {
+	const bigRibbons = document.querySelectorAll(
+		'.ribbon-1, .ribbon-3, .ribbon-5, .ribbon-7, .ribbon-10, .ribbon-12, .ribbon-13, .ribbon-14, .ribbon-15, .ribbon-16'
+	);
+
+	if (bigRibbons.length > 0) {
+		bigRibbons.forEach((ribbon, index) => {
+			const computed = window.getComputedStyle(ribbon);
+			const durationToken = computed.animationDuration.split(',')[0].trim();
+			const durationSeconds = durationToken.endsWith('ms')
+				? parseFloat(durationToken) / 1000
+				: parseFloat(durationToken);
+
+			if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) return;
+
+			const phase = (index + 0.5) / bigRibbons.length;
+			const delaySeconds = -(phase * durationSeconds);
+			ribbon.style.animationDelay = `${delaySeconds}s`;
+		});
+	}
+
 	const glitterContainer = document.querySelector('.bg-glitter');
 	if (!glitterContainer) return;
 

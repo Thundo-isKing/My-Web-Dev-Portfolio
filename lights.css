@@ -15,7 +15,7 @@
 }
 
 .bg-base {
-	background: #0d0d0d;
+	background: #0f0b08;
 }
 
 .bg-noise {
@@ -29,9 +29,9 @@
 	position: fixed;
 	inset: 0;
 	background-image: 
-		url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='5' seed='15' /%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='0 0 0 1 0 1 0 1 0 0'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' /%3E%3C/svg%3E");
-	background-size: 120px 120px;
-	opacity: 0.7;
+		url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' seed='12' /%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0.5 0.7 0.85 0.95 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23noise)' /%3E%3C/svg%3E");
+	background-size: 85px 85px;
+	opacity: 1;
 	mix-blend-mode: multiply;
 	pointer-events: none;
 	z-index: 100;
@@ -44,13 +44,13 @@
 	border-radius: 56% 44% 57% 43% / 59% 42% 58% 41%;
 	background: linear-gradient(
 		90deg,
-		#000000 0%,
-		#d4af37 15%,
-		#f0c05a 30%,
-		#ffed4e 50%,
-		#f0c05a 70%,
-		#d4af37 85%,
-		#000000 100%
+		#f5d88a 0%,
+		#dbb13a 15%,
+		#8b6914 30%,
+		#c9941f 50%,
+		#8b6914 70%,
+		#dbb13a 85%,
+		#f5d88a 100%
 	);
 	filter: blur(55px);
 	will-change: transform, opacity;
@@ -143,13 +143,13 @@
 	height: clamp(3.75vh, 5.5vh, 7.5vh);
 	background: linear-gradient(
 		90deg,
-		#000000 0%,
-		#d4af37 15%,
-		#f0c05a 30%,
-		#ffed4e 50%,
-		#f0c05a 70%,
-		#d4af37 85%,
-		#000000 100%
+		#f5d88a 0%,
+		#dbb13a 15%,
+		#8b6914 30%,
+		#c9941f 50%,
+		#8b6914 70%,
+		#dbb13a 85%,
+		#f5d88a 100%
 	);
 	animation: ribbonDriftSmall 90s linear infinite, opacityPulse 6.3s ease-in-out infinite;
 	animation-delay: -30s, -4.2s;
@@ -162,13 +162,13 @@
 	height: clamp(20vh, 28vh, 35vh);
 	background: linear-gradient(
 		90deg,
-		#000000 0%,
-		#d4af37 15%,
-		#f0c05a 30%,
-		#ffed4e 50%,
-		#f0c05a 70%,
-		#d4af37 85%,
-		#000000 100%
+		#f5d88a 0%,
+		#dbb13a 15%,
+		#8b6914 30%,
+		#c9941f 50%,
+		#8b6914 70%,
+		#dbb13a 85%,
+		#f5d88a 100%
 	);
 	opacity: 1;
 	animation: ribbonDriftTall 70s linear infinite;
@@ -182,13 +182,13 @@
 	height: clamp(3.75vh, 5.5vh, 7.5vh);
 	background: linear-gradient(
 		90deg,
-		#000000 0%,
-		#d4af37 15%,
-		#f0c05a 30%,
-		#ffed4e 50%,
-		#f0c05a 70%,
-		#d4af37 85%,
-		#000000 100%
+		#f5d88a 0%,
+		#dbb13a 15%,
+		#8b6914 30%,
+		#c9941f 50%,
+		#8b6914 70%,
+		#dbb13a 85%,
+		#f5d88a 100%
 	);
 	animation: ribbonDriftSmall 90s linear infinite, opacityPulse 7.1s ease-in-out infinite;
 	animation-delay: -37s, -2.3s;
@@ -201,17 +201,57 @@
 	height: clamp(20vh, 28vh, 35vh);
 	background: linear-gradient(
 		90deg,
-		#000000 0%,
-		#d4af37 15%,
-		#f0c05a 30%,
-		#ffed4e 50%,
-		#f0c05a 70%,
-		#d4af37 85%,
-		#000000 100%
+		#f5d88a 0%,
+		#dbb13a 15%,
+		#8b6914 30%,
+		#c9941f 50%,
+		#8b6914 70%,
+		#dbb13a 85%,
+		#f5d88a 100%
 	);
 	opacity: 1;
 	animation: ribbonDriftTall 70s linear infinite;
 	animation-delay: -52s;
+}
+
+.ribbon-13 {
+	top: 145vh;
+	left: 62vw;
+	width: clamp(260vw, 330vw, 400vw);
+	height: clamp(22vh, 30vh, 38vh);
+	opacity: 1;
+	animation: ribbonDrift 68s linear infinite;
+	animation-delay: -20s;
+}
+
+.ribbon-14 {
+	top: 170vh;
+	left: 30vw;
+	width: clamp(280vw, 360vw, 430vw);
+	height: clamp(24vh, 34vh, 42vh);
+	opacity: 1;
+	animation: ribbonDriftTall 64s linear infinite;
+	animation-delay: -28s;
+}
+
+.ribbon-15 {
+	top: 120vh;
+	left: 84vw;
+	width: clamp(250vw, 320vw, 390vw);
+	height: clamp(20vh, 28vh, 35vh);
+	opacity: 1;
+	animation: ribbonDrift 72s linear infinite;
+	animation-delay: -36s;
+}
+
+.ribbon-16 {
+	top: 155vh;
+	left: -8vw;
+	width: clamp(270vw, 345vw, 410vw);
+	height: clamp(22vh, 31vh, 40vh);
+	opacity: 1;
+	animation: ribbonDriftTall 66s linear infinite;
+	animation-delay: -44s;
 }
 
 @keyframes ribbonDrift {
