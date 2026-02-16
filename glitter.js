@@ -54,4 +54,85 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	updateGlitterPositions();
+
+	// Make capital letters significantly larger
+	const heading = document.querySelector('.hero h1');
+	if (heading) {
+		const text = heading.textContent;
+		const wrapped = text.replace(/[A-Z]/g, '<span class="cap-letter">$&</span>');
+		heading.innerHTML = wrapped;
+	}
+
+	// Mouse-following sheen on hero card AND click animation
+	const heroCard = document.getElementById('hero-card');
+	const contentSection = document.getElementById('content-section');
+	const siteShell = document.querySelector('.site-shell');
+	
+	if (heroCard && contentSection && siteShell) {
+		heroCard.style.cursor = 'pointer';
+		
+		// Sheen follows mouse
+		heroCard.addEventListener('mousemove', (e) => {
+			const rect = heroCard.getBoundingClientRect();
+			const x = e.clientX - rect.left;
+			const y = e.clientY - rect.top;
+			
+			heroCard.style.setProperty('--mouse-x', `${x}px`);
+			heroCard.style.setProperty('--mouse-y', `${y}px`);
+		});
+		
+		heroCard.addEventListener('mouseleave', () => {
+			heroCard.style.setProperty('--mouse-x', '-100%');
+			heroCard.style.setProperty('--mouse-y', '-100%');
+		});
+		
+		// Click to animate
+		let isAnimating = false;
+		let isContentActive = false;
+		
+		heroCard.addEventListener('click', () => {
+			if (isAnimating) return;
+			isAnimating = true;
+			isContentActive = true;
+			
+			// Trigger hero exit animation
+			siteShell.classList.add('animating');
+			
+			// Show content section after animation starts
+			setTimeout(() => {
+				contentSection.classList.add('active');
+			}, 1000);
+			
+			// Hide hero container after animation completes
+			setTimeout(() => {
+				siteShell.style.display = 'none';
+				isAnimating = false;
+			}, 1800);
+		});
+		
+		// Better scroll detection - use wheel event for immediate response
+		window.addEventListener('wheel', (e) => {
+			const scrollingUp = e.deltaY < 0;
+			
+			if (scrollingUp && isContentActive && !isAnimating) {
+				isAnimating = true;
+				isContentActive = false;
+				
+				// Hide content section
+				contentSection.classList.remove('active');
+				
+				// Show and reset hero
+				setTimeout(() => {
+					siteShell.style.display = '';
+					siteShell.classList.remove('animating');
+					siteShell.classList.add('fading-in');
+					
+					setTimeout(() => {
+						siteShell.classList.remove('fading-in');
+						isAnimating = false;
+					}, 600);
+				}, 300);
+			}
+		}, { passive: true });
+	}
 });
