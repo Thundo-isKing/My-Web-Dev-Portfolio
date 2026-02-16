@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	const glitterContainer = document.querySelector('.bg-glitter');
+	const specialGlitterContainer = document.querySelector('.bg-glitter-special');
 	if (!glitterContainer) return;
 
 	let mouseX = window.innerWidth / 2;
@@ -41,6 +42,13 @@ document.addEventListener('DOMContentLoaded', () => {
 		
 		// Apply transform to container
 		glitterContainer.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+		
+		// Special glitters - soft mystical repulsion from mouse
+		if (specialGlitterContainer) {
+			const specialOffsetX = (centerX - mouseX) * 0.15; // Gentle push away
+			const specialOffsetY = (centerY - mouseY) * 0.15;
+			specialGlitterContainer.style.transform = `translate(${specialOffsetX}px, ${specialOffsetY}px)`;
+		}
 		
 		requestAnimationFrame(updateGlitterPositions);
 	}
