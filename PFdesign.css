@@ -46,11 +46,12 @@ body {
 		inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 	position: relative;
 	overflow: hidden;
-	transition: transform 0.3s ease;
+	transform-style: preserve-3d;
+	will-change: transform;
 }
 
 .hero:hover {
-	transform: scale(1.03);
+	/* scale handled by JS tilt loop */
 }
 
 .hero::after {
@@ -155,30 +156,35 @@ body {
 .card-glass {
 	background: linear-gradient(
 		135deg,
-		rgba(255, 255, 255, 0.1) 0%,
-		rgba(255, 255, 255, 0.05) 50%,
-		rgba(0, 0, 0, 0.2) 100%
+		rgba(40, 40, 40, 0.4) 0%,
+		rgba(20, 20, 20, 0.5) 50%,
+		rgba(10, 10, 10, 0.6) 100%
 	);
-	backdrop-filter: blur(60px) saturate(180%) brightness(1.15);
-	-webkit-backdrop-filter: blur(60px) saturate(180%) brightness(1.15);
-	border: 1px solid transparent;
-	border-image: linear-gradient(
-		135deg,
-		rgba(255, 255, 255, 0.4),
-		rgba(255, 255, 255, 0.1),
-		rgba(255, 255, 255, 0.05)
-	) 1;
+	backdrop-filter: blur(100px) saturate(180%) brightness(1.1);
+	-webkit-backdrop-filter: blur(100px) saturate(180%) brightness(1.1);
+	border: 1.5px solid rgba(255, 255, 255, 0.25);
 	border-radius: 32px;
 	box-shadow: 
-		0 8px 32px 0 rgba(0, 0, 0, 0.5),
-		0 2px 8px 0 rgba(0, 0, 0, 0.3),
-		inset 0 0 0 1px rgba(255, 255, 255, 0.15),
-		inset 0 2px 4px 0 rgba(255, 255, 255, 0.1),
-		inset 0 -2px 4px 0 rgba(0, 0, 0, 0.2);
+		/* Outer depth shadows */
+		0 30px 90px -15px rgba(0, 0, 0, 0.7),
+		0 15px 45px -8px rgba(0, 0, 0, 0.5),
+		0 8px 25px -5px rgba(0, 0, 0, 0.4),
+		/* Edge highlights */
+		inset 0 2px 3px 0 rgba(255, 255, 255, 0.4),
+		inset 0 -2px 3px 0 rgba(0, 0, 0, 0.35),
+		/* Side lighting */
+		inset -2px 0 3px 0 rgba(255, 255, 255, 0.25),
+		inset 2px 0 3px 0 rgba(0, 0, 0, 0.25),
+		/* Inner depth */
+		inset 0 0 30px 3px rgba(0, 0, 0, 0.25),
+		/* Outer glow - permanent */
+		0 0 0 1.5px rgba(255, 255, 255, 0.18),
+		0 0 40px 2px rgba(255, 255, 255, 0.08);
 	padding: 2.5rem;
 	position: relative;
 	overflow: hidden;
-	transition: all 0.3s ease;
+	transform: translateZ(0) scale(1);
+	transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Ensure content stays above glass effects */
@@ -187,53 +193,52 @@ body {
 	z-index: 2;
 }
 
+/* Top curved highlight - creates 3D bubble effect - spreads to edges */
 .card-glass::before {
 	content: '';
 	position: absolute;
-	top: 0;
+	top: -15%;
 	left: 0;
 	right: 0;
-	height: 50%;
-	background: linear-gradient(
-		180deg,
+	height: 70%;
+	background: radial-gradient(
+		ellipse 100% 90% at 50% 30%,
 		rgba(255, 255, 255, 0.15) 0%,
-		rgba(255, 255, 255, 0.05) 50%,
-		transparent 100%
+		rgba(255, 255, 255, 0.1) 25%,
+		rgba(255, 255, 255, 0.06) 45%,
+		rgba(255, 255, 255, 0.03) 65%,
+		transparent 85%
 	);
-	border-radius: 32px 32px 0 0;
+	border-radius: 32px 32px 50% 50%;
 	pointer-events: none;
-	opacity: 0.8;
+	opacity: 1;
 	z-index: 0;
+	filter: blur(2px);
 }
 
+/* Dynamic center glow - always visible */
 .card-glass::after {
 	content: '';
 	position: absolute;
-	top: -50%;
-	left: -50%;
-	width: 200%;
-	height: 200%;
+	top: 50%;
+	left: 50%;
+	width: 80%;
+	height: 80%;
+	transform: translate(-50%, -50%);
 	background: radial-gradient(
 		circle at center,
-		rgba(255, 255, 255, 0.08) 0%,
-		transparent 70%
+		rgba(255, 255, 255, 0.12) 0%,
+		rgba(255, 255, 255, 0.06) 30%,
+		transparent 60%
 	);
 	pointer-events: none;
-	opacity: 0;
+	opacity: 1;
 	transition: opacity 0.5s ease;
 	z-index: 0;
 }
 
 .card-glass:hover {
-	transform: translateY(-6px);
-	box-shadow: 
-		0 12px 48px 0 rgba(0, 0, 0, 0.6),
-		0 4px 16px 0 rgba(0, 0, 0, 0.4),
-		inset 0 0 0 1px rgba(255, 255, 255, 0.2),
-		inset 0 2px 6px 0 rgba(255, 255, 255, 0.15),
-		inset 0 -2px 6px 0 rgba(0, 0, 0, 0.25);
-	backdrop-filter: blur(80px) saturate(200%) brightness(1.2);
-	-webkit-backdrop-filter: blur(80px) saturate(200%) brightness(1.2);
+	transform: translateZ(0) scale(1.02);
 }
 
 .card-glass:hover::after {
@@ -265,10 +270,130 @@ body {
 	align-self: center;
 }
 
+/* Experience Card - Pie Chart Styles */
+.experience-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	width: 100%;
+	gap: 1.5rem;
+	position: relative;
+}
+
+.experience-top {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	gap: 1.5rem;
+	width: 100%;
+}
+
+.pie-chart-wrapper {
+	width: 160px;
+	height: 160px;
+	position: relative;
+	flex-shrink: 0;
+}
+
+.pie-chart {
+	width: 100%;
+	height: 100%;
+	filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.pie-slice {
+	cursor: pointer;
+	transition: all 0.3s ease;
+	transform-box: fill-box;
+	transform-origin: 100px 100px;
+}
+
+/* Exploded gap between slices */
+.pie-slice[data-category="game-dev"] {
+	transform: translate(5px, -5px);
+}
+.pie-slice[data-category="front-end"] {
+	transform: translate(5px, 5px);
+}
+.pie-slice[data-category="back-end"] {
+	transform: translate(-5px, 5px);
+}
+.pie-slice[data-category="graphics"] {
+	transform: translate(-5px, -5px);
+}
+
+/* Hover: push further out + glow */
+.pie-slice[data-category="game-dev"]:hover,
+.pie-slice[data-category="game-dev"].label-hover {
+	transform: translate(10px, -10px) scale(1.06);
+	filter: brightness(1.4) drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
+}
+.pie-slice[data-category="front-end"]:hover,
+.pie-slice[data-category="front-end"].label-hover {
+	transform: translate(10px, 10px) scale(1.06);
+	filter: brightness(1.4) drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
+}
+.pie-slice[data-category="back-end"]:hover,
+.pie-slice[data-category="back-end"].label-hover {
+	transform: translate(-10px, 10px) scale(1.06);
+	filter: brightness(1.4) drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
+}
+.pie-slice[data-category="graphics"]:hover,
+.pie-slice[data-category="graphics"].label-hover {
+	transform: translate(-10px, -10px) scale(1.06);
+	filter: brightness(1.4) drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
+}
+
+.experience-labels {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 0.9rem;
+	flex-shrink: 0;
+}
+
+.exp-label {
+	font-family: 'Bodoni Moda', serif;
+	font-size: 0.78rem;
+	letter-spacing: 0.15em;
+	color: rgba(212, 175, 55, 0.7);
+	text-align: left;
+	transition: all 0.3s ease;
+	cursor: pointer;
+}
+
+.exp-label.active {
+	color: #f4d03f;
+	text-shadow: 0 0 10px rgba(244, 208, 63, 0.6);
+	transform: scale(1.05);
+}
+
+.experience-title {
+	font-family: 'Bodoni Moda', serif;
+	font-size: 1.9rem;
+	font-weight: 400;
+	letter-spacing: 0.3em;
+	background: linear-gradient(135deg, #d4af37 0%, #f4d03f 50%, #d4af37 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+	text-align: center;
+	border: 1.5px solid rgba(212, 175, 55, 0.3);
+	border-radius: 30px;
+	padding: 0.6rem 2.5rem;
+	width: fit-content;
+	transition: opacity 0.3s ease;
+}
+
 /* Enhanced glass edge lighting */
 .card-toolbox,
 .card-works,
 .card-experience {
+	transform-style: preserve-3d;
+	will-change: transform;
 	box-shadow: 
 		0 8px 32px 0 rgba(0, 0, 0, 0.5),
 		0 2px 8px 0 rgba(0, 0, 0, 0.3),
@@ -277,68 +402,98 @@ body {
 		inset 0 -2px 4px 0 rgba(0, 0, 0, 0.2),
 		inset -2px 0 4px 0 rgba(255, 255, 255, 0.05),
 		inset 2px 0 4px 0 rgba(0, 0, 0, 0.1);
+	/* liquidFloat removed — conflicts with JS tilt (both write transform) */
 }
 
-/* Shimmer light effect */
+/* Shimmer light effect - slower and dimmer, only on hover */
 .card-toolbox::after,
 .card-works::after,
 .card-experience::after {
 	content: '';
 	position: absolute;
-	top: 0;
-	left: -100%;
-	width: 50%;
-	height: 100%;
+	top: -20%;
+	left: -120%;
+	width: 60%;
+	height: 140%;
 	background: linear-gradient(
-		90deg,
-		transparent,
-		rgba(255, 255, 255, 0.15),
-		transparent
+		95deg,
+		transparent 0%,
+		rgba(255, 255, 255, 0.02) 20%,
+		rgba(255, 255, 255, 0.06) 40%,
+		rgba(255, 255, 255, 0.1) 50%,
+		rgba(255, 255, 255, 0.06) 60%,
+		rgba(255, 255, 255, 0.02) 80%,
+		transparent 100%
 	);
 	pointer-events: none;
 	z-index: 10;
-	animation: glassShimmer 8s ease-in-out infinite;
-	animation-delay: var(--shimmer-delay, 0s);
+	transform: skewX(-15deg) translateX(-100%);
+	filter: blur(2px);
+	opacity: 0;
+	transition: opacity 0.4s ease, transform 1.2s ease;
+}
+
+.card-toolbox:hover::after,
+.card-works:hover::after,
+.card-experience:hover::after {
+	opacity: 1;
+	transform: skewX(-15deg) translateX(250%);
 }
 
 .card-toolbox::after {
 	--shimmer-delay: 0s;
 }
 
+.card-toolbox {
+	--float-delay: 0s;
+}
+
 .card-works::after {
 	--shimmer-delay: 2.5s;
+}
+
+.card-works {
+	--float-delay: 2s;
 }
 
 .card-experience::after {
 	--shimmer-delay: 5s;
 }
 
-.card-toolbox:hover,
-.card-works:hover,
-.card-experience:hover {
-	box-shadow: 
-		0 12px 48px 0 rgba(0, 0, 0, 0.6),
-		0 4px 16px 0 rgba(0, 0, 0, 0.4),
-		inset 0 0 0 1px rgba(255, 255, 255, 0.2),
-		inset 0 2px 6px 0 rgba(255, 255, 255, 0.15),
-		inset 0 -2px 6px 0 rgba(0, 0, 0, 0.25),
-		inset -3px 0 6px 0 rgba(255, 255, 255, 0.08),
-		inset 3px 0 6px 0 rgba(0, 0, 0, 0.15),
-		0 0 40px 0 rgba(255, 255, 255, 0.05);
-}
-
+/* Apply glass effect to tech stack with same transparency */
 .tech-stack {
 	max-width: 1200px;
 	margin: 3rem auto 2rem;
-	background: rgba(0, 0, 0, 0.5);
-	backdrop-filter: blur(20px);
-	-webkit-backdrop-filter: blur(20px);
-	border: 0.5px solid rgba(255, 255, 255, 0.15);
+	background: linear-gradient(
+		135deg,
+		rgba(40, 40, 40, 0.4) 0%,
+		rgba(20, 20, 20, 0.5) 50%,
+		rgba(10, 10, 10, 0.6) 100%
+	);
+	backdrop-filter: blur(100px) saturate(180%) brightness(1.1);
+	-webkit-backdrop-filter: blur(100px) saturate(180%) brightness(1.1);
+	border: 1.5px solid rgba(255, 255, 255, 0.25);
 	border-radius: 50px;
 	padding: 2rem;
 	min-height: 80px;
 	overflow: hidden;
 	position: relative;
+	box-shadow: 
+		0 30px 90px -15px rgba(0, 0, 0, 0.7),
+		0 15px 45px -8px rgba(0, 0, 0, 0.5),
+		0 8px 25px -5px rgba(0, 0, 0, 0.4),
+		inset 0 2px 3px 0 rgba(255, 255, 255, 0.4),
+		inset 0 -2px 3px 0 rgba(0, 0, 0, 0.35),
+		inset -2px 0 3px 0 rgba(255, 255, 255, 0.25),
+		inset 2px 0 3px 0 rgba(0, 0, 0, 0.25),
+		0 0 0 1.5px rgba(255, 255, 255, 0.18),
+		0 0 40px 2px rgba(255, 255, 255, 0.08);
+	transform: scale(1);
+	transition: transform 0.3s ease;
+}
+
+.tech-stack:hover {
+	transform: scale(1.01);
 }
 
 .tech-stack::before,
@@ -348,7 +503,7 @@ body {
 	top: 0;
 	width: 150px;
 	height: 100%;
-	z-index: 2;
+	z-index: 3;
 	pointer-events: none;
 }
 
@@ -362,9 +517,33 @@ body {
 	background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.5) 100%);
 }
 
+/* Glass bubble highlight for tech-stack - spreads to edges */
+.tech-stack > .tech-scroll-container::before {
+	content: '';
+	position: absolute;
+	top: -10%;
+	left: 0;
+	right: 0;
+	height: 65%;
+	background: radial-gradient(
+		ellipse 100% 75% at 50% 30%,
+		rgba(255, 255, 255, 0.15) 0%,
+		rgba(255, 255, 255, 0.1) 25%,
+		rgba(255, 255, 255, 0.06) 45%,
+		rgba(255, 255, 255, 0.03) 65%,
+		transparent 85%
+	);
+	border-radius: 50px 50px 40% 40%;
+	pointer-events: none;
+	z-index: 1;
+	filter: blur(2px);
+}
+
 .tech-scroll-container {
 	display: flex;
 	width: fit-content;
+	position: relative;
+	z-index: 2;
 }
 
 .tech-scroll {
@@ -441,14 +620,103 @@ body {
 
 @keyframes glassShimmer {
 	0% {
-		transform: translateX(-100%) skewX(-15deg);
+		left: -120%;
 		opacity: 0;
 	}
-	50% {
+	40% {
+		opacity: 1;
+	}
+	60% {
 		opacity: 1;
 	}
 	100% {
-		transform: translateX(200%) skewX(-15deg);
+		left: 130%;
 		opacity: 0;
 	}
+}
+
+@keyframes liquidFloat {
+	0%, 100% {
+		transform: translateY(0px) scale(1);
+	}
+	50% {
+		transform: translateY(-3px) scale(1.002);
+	}
+}
+
+/* ============================================
+   CARD ENTRANCE ANIMATIONS (A)
+   ============================================ */
+
+/* Initial hidden states — cards start off-screen */
+.card-toolbox,
+.card-works,
+.card-experience,
+.tech-stack {
+	opacity: 0;
+}
+
+.card-toolbox  { transform: translateX(-80px); }
+.card-works    { transform: translateY(80px); }
+.card-experience { transform: translateX(80px); }
+.tech-stack    { transform: translateY(60px); }
+
+/* Once JS adds .card-visible, play the entrance */
+.card-toolbox.card-visible {
+	animation: enterFromLeft 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.card-works.card-visible {
+	animation: enterFromBottom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+	animation-delay: 0.35s;
+}
+.card-experience.card-visible {
+	animation: enterFromRight 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+	animation-delay: 0.7s;
+}
+.tech-stack.card-visible {
+	animation: enterFromBottom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+	animation-delay: 1.05s;
+}
+
+@keyframes enterFromLeft {
+	from { opacity: 0; transform: translateX(-80px); }
+	to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes enterFromRight {
+	from { opacity: 0; transform: translateX(80px); }
+	to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes enterFromBottom {
+	from { opacity: 0; transform: translateY(80px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes exitToLeft {
+	from { opacity: 1; transform: translateX(0); }
+	to   { opacity: 0; transform: translateX(-80px); }
+}
+@keyframes exitToRight {
+	from { opacity: 1; transform: translateX(0); }
+	to   { opacity: 0; transform: translateX(80px); }
+}
+@keyframes exitToBottom {
+	from { opacity: 1; transform: translateY(0); }
+	to   { opacity: 0; transform: translateY(80px); }
+}
+
+.card-toolbox.card-exiting {
+	animation: exitToLeft 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+	animation-delay: 0s;
+}
+.card-works.card-exiting {
+	animation: exitToBottom 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+	animation-delay: 0.1s;
+}
+.card-experience.card-exiting {
+	animation: exitToRight 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+	animation-delay: 0.2s;
+}
+.tech-stack.card-exiting {
+	animation: exitToBottom 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+	animation-delay: 0.3s;
 }
