@@ -145,60 +145,259 @@ body {
 
 .cards-grid {
 	max-width: 1200px;
-	margin: 0 auto 3rem;
+	margin: 2rem auto 3rem;
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	grid-template-rows: auto auto;
-	gap: 2rem;
+	gap: 3rem 2rem;
 }
 
 .card-glass {
-	background: rgba(0, 0, 0, 0.65);
-	backdrop-filter: blur(40px) saturate(200%) brightness(1.1);
-	-webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.1);
-	border: 0.5px solid rgba(255, 255, 255, 0.18);
-	border-radius: 20px;
+	background: linear-gradient(
+		135deg,
+		rgba(255, 255, 255, 0.1) 0%,
+		rgba(255, 255, 255, 0.05) 50%,
+		rgba(0, 0, 0, 0.2) 100%
+	);
+	backdrop-filter: blur(60px) saturate(180%) brightness(1.15);
+	-webkit-backdrop-filter: blur(60px) saturate(180%) brightness(1.15);
+	border: 1px solid transparent;
+	border-image: linear-gradient(
+		135deg,
+		rgba(255, 255, 255, 0.4),
+		rgba(255, 255, 255, 0.1),
+		rgba(255, 255, 255, 0.05)
+	) 1;
+	border-radius: 32px;
 	box-shadow: 
-		0 8px 32px 0 rgba(0, 0, 0, 0.37),
-		inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+		0 8px 32px 0 rgba(0, 0, 0, 0.5),
+		0 2px 8px 0 rgba(0, 0, 0, 0.3),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+		inset 0 2px 4px 0 rgba(255, 255, 255, 0.1),
+		inset 0 -2px 4px 0 rgba(0, 0, 0, 0.2);
 	padding: 2.5rem;
 	position: relative;
 	overflow: hidden;
-	transition: transform 0.3s ease;
+	transition: all 0.3s ease;
+}
+
+/* Ensure content stays above glass effects */
+.card-glass > * {
+	position: relative;
+	z-index: 2;
+}
+
+.card-glass::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 50%;
+	background: linear-gradient(
+		180deg,
+		rgba(255, 255, 255, 0.15) 0%,
+		rgba(255, 255, 255, 0.05) 50%,
+		transparent 100%
+	);
+	border-radius: 32px 32px 0 0;
+	pointer-events: none;
+	opacity: 0.8;
+	z-index: 0;
+}
+
+.card-glass::after {
+	content: '';
+	position: absolute;
+	top: -50%;
+	left: -50%;
+	width: 200%;
+	height: 200%;
+	background: radial-gradient(
+		circle at center,
+		rgba(255, 255, 255, 0.08) 0%,
+		transparent 70%
+	);
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.5s ease;
+	z-index: 0;
 }
 
 .card-glass:hover {
-	transform: translateY(-4px);
+	transform: translateY(-6px);
+	box-shadow: 
+		0 12px 48px 0 rgba(0, 0, 0, 0.6),
+		0 4px 16px 0 rgba(0, 0, 0, 0.4),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+		inset 0 2px 6px 0 rgba(255, 255, 255, 0.15),
+		inset 0 -2px 6px 0 rgba(0, 0, 0, 0.25);
+	backdrop-filter: blur(80px) saturate(200%) brightness(1.2);
+	-webkit-backdrop-filter: blur(80px) saturate(200%) brightness(1.2);
+}
+
+.card-glass:hover::after {
+	opacity: 1;
 }
 
 .card-toolbox {
 	grid-column: 1;
 	grid-row: 1;
-	min-height: 200px;
+	min-height: 260px;
+	max-width: calc(100% - 15px);
 }
 
 .card-works {
 	grid-column: 1;
 	grid-row: 2;
-	min-height: 200px;
+	min-height: 260px;
+	max-width: calc(100% - 15px);
 }
 
 .card-experience {
 	grid-column: 2;
 	grid-row: 1 / 3;
-	min-height: 420px;
+	width: 395px;
+	height: 395px;
+	min-height: 395px;
+	max-height: 395px;
+	justify-self: center;
+	align-self: center;
+}
+
+/* Enhanced glass edge lighting */
+.card-toolbox,
+.card-works,
+.card-experience {
+	box-shadow: 
+		0 8px 32px 0 rgba(0, 0, 0, 0.5),
+		0 2px 8px 0 rgba(0, 0, 0, 0.3),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+		inset 0 2px 4px 0 rgba(255, 255, 255, 0.1),
+		inset 0 -2px 4px 0 rgba(0, 0, 0, 0.2),
+		inset -2px 0 4px 0 rgba(255, 255, 255, 0.05),
+		inset 2px 0 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Shimmer light effect */
+.card-toolbox::after,
+.card-works::after,
+.card-experience::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: -100%;
+	width: 50%;
+	height: 100%;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		rgba(255, 255, 255, 0.15),
+		transparent
+	);
+	pointer-events: none;
+	z-index: 10;
+	animation: glassShimmer 8s ease-in-out infinite;
+	animation-delay: var(--shimmer-delay, 0s);
+}
+
+.card-toolbox::after {
+	--shimmer-delay: 0s;
+}
+
+.card-works::after {
+	--shimmer-delay: 2.5s;
+}
+
+.card-experience::after {
+	--shimmer-delay: 5s;
+}
+
+.card-toolbox:hover,
+.card-works:hover,
+.card-experience:hover {
+	box-shadow: 
+		0 12px 48px 0 rgba(0, 0, 0, 0.6),
+		0 4px 16px 0 rgba(0, 0, 0, 0.4),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+		inset 0 2px 6px 0 rgba(255, 255, 255, 0.15),
+		inset 0 -2px 6px 0 rgba(0, 0, 0, 0.25),
+		inset -3px 0 6px 0 rgba(255, 255, 255, 0.08),
+		inset 3px 0 6px 0 rgba(0, 0, 0, 0.15),
+		0 0 40px 0 rgba(255, 255, 255, 0.05);
 }
 
 .tech-stack {
 	max-width: 1200px;
-	margin: 0 auto;
+	margin: 3rem auto 2rem;
 	background: rgba(0, 0, 0, 0.5);
 	backdrop-filter: blur(20px);
 	-webkit-backdrop-filter: blur(20px);
 	border: 0.5px solid rgba(255, 255, 255, 0.15);
-	border-radius: 16px;
+	border-radius: 50px;
 	padding: 2rem;
 	min-height: 80px;
+	overflow: hidden;
+	position: relative;
+}
+
+.tech-stack::before,
+.tech-stack::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	width: 150px;
+	height: 100%;
+	z-index: 2;
+	pointer-events: none;
+}
+
+.tech-stack::before {
+	left: 0;
+	background: linear-gradient(90deg, rgba(0, 0, 0, 0.5) 0%, transparent 100%);
+}
+
+.tech-stack::after {
+	right: 0;
+	background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.5) 100%);
+}
+
+.tech-scroll-container {
+	display: flex;
+	width: fit-content;
+}
+
+.tech-scroll {
+	display: flex;
+	gap: 4rem;
+	animation: scroll 60s linear infinite;
+}
+
+.tech-scroll:first-child {
+	padding-right: 4rem;
+}
+
+.tech-scroll i {
+	font-size: 3rem;
+	color: #dbb13a;
+	flex-shrink: 0;
+	transition: color 0.3s ease, transform 0.3s ease;
+	filter: drop-shadow(0 0 8px rgba(219, 177, 58, 0.3));
+}
+
+.tech-scroll i:hover {
+	color: #ffed4e;
+	transform: scale(1.15);
+	filter: drop-shadow(0 0 12px rgba(255, 237, 78, 0.5));
+}
+
+@keyframes scroll {
+	0% {
+		transform: translateX(0);
+	}
+	100% {
+		transform: translateX(calc(-33.333%));
+	}
 }
 
 /* Hero Animation States */
@@ -237,5 +436,19 @@ body {
 	100% {
 		opacity: 1;
 		transform: scale(1);
+	}
+}
+
+@keyframes glassShimmer {
+	0% {
+		transform: translateX(-100%) skewX(-15deg);
+		opacity: 0;
+	}
+	50% {
+		opacity: 1;
+	}
+	100% {
+		transform: translateX(200%) skewX(-15deg);
+		opacity: 0;
 	}
 }
