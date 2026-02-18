@@ -251,7 +251,30 @@ document.addEventListener('DOMContentLoaded', () => {
 				contentSection.classList.add('active');
 				resetCardsToHidden();
 				// Small delay so content section is visible before cards fly in
-				setTimeout(() => animateCardsIn(), 100);
+				setTimeout(() => {
+					animateCardsIn();
+					// Start intro animation after card-toolbox entrance completes
+					// Card-toolbox: 0ms delay + 800ms animation + buffer = 1200ms
+					setTimeout(() => {
+						if (window.startIntroAnimation) {
+							window.startIntroAnimation();
+						}
+					}, 1200);
+					// Start works animation after card-works entrance completes
+					// Card-works: 350ms delay + 800ms animation + buffer = 1550ms
+					setTimeout(() => {
+						if (window.startWorksAnimation) {
+							window.startWorksAnimation();
+						}
+					}, 1550);
+					// Start experience animation after card-experience entrance completes
+					// Card-experience: 700ms delay + 800ms animation + buffer = 1900ms
+					setTimeout(() => {
+						if (window.startExperienceAnimation) {
+							window.startExperienceAnimation();
+						}
+					}, 1900);
+				}, 100);
 			}, 1000);
 
 			setTimeout(() => {
@@ -439,5 +462,318 @@ document.addEventListener('DOMContentLoaded', () => {
 				resetTitle();
 			});
 		});
+	}
+
+	// ============================================
+	// PIE CHART HOVER TEXT TRANSITIONS
+	// ============================================
+	const introTextElement = document.getElementById('intro-text');
+	const textOverlay = document.getElementById('text-transition-overlay');
+	
+	if (introTextElement && textOverlay && pieSlices.length > 0) {
+		let currentCategory = null;
+		let isTransitioning = false;
+		let transitionTimeout = null;
+		let slideInTimeout = null;
+		let slideOutTimeout = null;
+		let resetTimeout = null;
+		
+		// Match the exact structure created by revealTextWordByWord() with word spans and highlights
+		const originalText = '<span class="word">Hey,</span> <span class="word">My</span> <span class="word">name</span> <span class="word">is</span> <span class="word highlight">David.</span> <span class="word">I</span> <span class="word">am</span> <span class="word">a</span> <span class="word highlight">Fullstack</span> <span class="word highlight">Web</span> <span class="word highlight">Developer</span> <span class="word">with</span> <span class="word">experience</span> <span class="word">in</span> <span class="word highlight">Game</span> <span class="word highlight">Development</span> <span class="word">and</span> <span class="word highlight">Graphics</span> <span class="word highlight">Design.</span>';
+		
+		const categoryDescriptions = {
+			'game-dev': "Game Development is where my <span class='highlight'>journey</span> started. I was introduced to coding in <span class='highlight'>2nd grade</span> and fell in love with it. This is where I solidified the ability of thinking like a <span class='highlight'>problem solver</span> and in the next <span class='highlight'>five years</span> learned <span class='highlight'>Scratch</span>, <span class='highlight'>Python</span> and a touch of <span class='highlight'>JS</span>.",
+			'graphics': "Graphics Design description goes here.",
+			'front-end': "Front-End development description goes here.",
+			'back-end': "Back-End development description goes here."
+		};
+		
+		function transitionText(newText, category) {
+			// Clear any pending timeouts from previous transitions
+			if (transitionTimeout) clearTimeout(transitionTimeout);
+			if (slideInTimeout) clearTimeout(slideInTimeout);
+			if (slideOutTimeout) clearTimeout(slideOutTimeout);
+			if (resetTimeout) clearTimeout(resetTimeout);
+			
+			// Reset overlay state
+			textOverlay.classList.remove('slide-in', 'slide-out');
+			
+			isTransitioning = true;
+			currentCategory = category;
+			
+			// Start slide-in
+			textOverlay.classList.add('slide-in');
+			
+			// Change text while covered (after 200ms into slide-in)
+			slideInTimeout = setTimeout(() => {
+				introTextElement.innerHTML = newText;
+				
+				// If returning to original text, ensure word spans are visible and maintain flex layout
+				if (category === null) {
+					introTextElement.classList.add('revealing');
+					const wordSpans = introTextElement.querySelectorAll('.word');
+					wordSpans.forEach(span => {
+						span.style.opacity = '1';
+						span.style.animationDelay = '0s';
+					});
+				} else {
+					// Category description - use normal block layout
+					introTextElement.classList.remove('revealing');
+					introTextElement.style.opacity = '1';
+				}
+			}, 200);
+			
+			// Start slide-out after slide-in completes
+			slideOutTimeout = setTimeout(() => {
+				textOverlay.classList.remove('slide-in');
+				textOverlay.classList.add('slide-out');
+				
+				// Reset after slide-out completes
+				resetTimeout = setTimeout(() => {
+					textOverlay.classList.remove('slide-out');
+					isTransitioning = false;
+				}, 400);
+			}, 400);
+		}
+		
+		function showCategoryText(category) {
+			// If already showing this category, do nothing
+			if (currentCategory === category) return;
+			
+			const description = categoryDescriptions[category];
+			if (description) {
+				transitionText(description, category);
+			}
+		}
+		
+		function returnToOriginal() {
+			// Delay the return slightly to allow smooth transitions when moving between slices
+			transitionTimeout = setTimeout(() => {
+				if (currentCategory !== null) {
+					transitionText(originalText, null);
+				}
+			}, 150);
+		}
+		
+		// Add hover listeners to pie slices
+		pieSlices.forEach(slice => {
+			slice.addEventListener('mouseenter', () => {
+				if (transitionTimeout) {
+					clearTimeout(transitionTimeout);
+				}
+				showCategoryText(slice.dataset.category);
+			});
+			slice.addEventListener('mouseleave', returnToOriginal);
+		});
+		
+		// Add hover listeners to labels
+		expLabels.forEach(label => {
+			label.addEventListener('mouseenter', () => {
+				if (transitionTimeout) {
+					clearTimeout(transitionTimeout);
+				}
+				showCategoryText(label.dataset.category);
+			});
+			label.addEventListener('mouseleave', returnToOriginal);
+		});
+	}
+
+	// ============================================
+	// INTRO ANIMATION SEQUENCE (card-toolbox)
+	// ============================================
+	const introBars = document.getElementById('intro-bars');
+	const introRect = document.getElementById('intro-rect');
+	const introText = document.getElementById('intro-text');
+	const introOverlay = document.getElementById('intro-overlay');
+
+	if (introBars && introRect && introText && introOverlay) {
+		const INTRO_TEXT = "Hey, My name is David. I am a Fullstack Web Developer with experience in Game Development and Graphics Design.";
+
+		// Expose function globally so it can be called after card entrance
+		window.startIntroAnimation = function() {
+			// Stage 1: Start wave animation
+			const bars = introBars.querySelectorAll('.intro-bar');
+			bars.forEach(bar => bar.classList.add('waving'));
+
+			// Stage 2: At 5.5s (after all bars finish waving), combine bars into tall rect
+			// Last bar finishes at 0.45s delay + 5s animation = 5.45s
+			setTimeout(() => {
+				introBars.classList.add('combining');
+			}, 5500);
+
+			// Stage 3: At 6.1s (after combine completes), make bars invisible and show expanding rect
+			setTimeout(() => {
+				introBars.style.opacity = '0';
+				introRect.classList.add('expanding');
+			}, 6100);
+
+			// Stage 4: At 6.9s (after expand completes), pause briefly, then split rect and reveal text
+			setTimeout(() => {
+				// Brief pause
+				setTimeout(() => {
+					introRect.classList.add('splitting');
+					revealTextWordByWord();
+				}, 200);
+			}, 6900);
+
+			// Text and overlay stay visible until user hovers over pie chart
+			// (will be controlled by future hover interaction)
+		};
+
+		function revealTextWordByWord() {
+			introText.classList.add('revealing');
+			const words = INTRO_TEXT.split(' ');
+			
+			// Words to highlight in white
+			const highlightWords = ['David.', 'Fullstack', 'Web', 'Developer', 'Game', 'Development', 'Graphics', 'Design.'];
+			
+			introText.innerHTML = words.map(w => {
+				const isHighlight = highlightWords.includes(w);
+				return `<span class="word${isHighlight ? ' highlight' : ''}">${w}</span>`;
+			}).join(' ');
+
+			const wordElements = introText.querySelectorAll('.word');
+			wordElements.forEach((word, i) => {
+				setTimeout(() => {
+					word.style.animationDelay = '0s';
+					word.style.opacity = '1';
+				}, i * 150); // 150ms between each word
+			});
+			
+			// Start cascading glow wave animation every 60 seconds
+			function startGlowWave() {
+				introText.classList.add('glow-active');
+				
+				// Find index of "Design." to know when to stop
+				const designIndex = words.indexOf('Design.');
+				const endIndex = designIndex >= 0 ? designIndex : words.length - 1;
+				
+				// Glow each word in sequence with increasing brightness
+				for (let i = 0; i <= endIndex; i++) {
+					setTimeout(() => {
+						wordElements[i].classList.add('glowing');
+						// Increase overall brightness as we progress
+						const progress = (i + 1) / (endIndex + 1);
+						introText.style.filter = `brightness(${1.1 + progress * 0.3}) drop-shadow(0 0 ${10 + progress * 20}px rgba(255, 215, 0, ${0.3 + progress * 0.4}))`;
+						
+						// Remove glowing class after animation
+						setTimeout(() => {
+							wordElements[i].classList.remove('glowing');
+						}, 800);
+					}, i * 120); // 120ms between each word glow
+				}
+				
+				// Reset after animation completes
+				setTimeout(() => {
+					introText.classList.remove('glow-active');
+					introText.style.filter = '';
+				}, (endIndex + 1) * 120 + 1000);
+			}
+			
+			// Start first glow wave after text is revealed, then repeat every 60 seconds
+			setTimeout(() => {
+				startGlowWave();
+				setInterval(startGlowWave, 60000);
+			}, (words.length * 150) + 1000); // Wait for all words to appear + 1s
+		}
+	}
+
+	// ============================================
+	// WORKS ANIMATION SEQUENCE (card-works)
+	// ============================================
+	const worksBars = document.getElementById('works-bars');
+	const worksRect = document.getElementById('works-rect');
+	const worksText = document.getElementById('works-text');
+	const worksOverlay = document.getElementById('works-overlay');
+
+	if (worksBars && worksRect && worksText && worksOverlay) {
+		const WORKS_TEXT = "Portfolio Showcase Coming Soon";
+
+		// Expose function globally so it can be called after card entrance
+		window.startWorksAnimation = function() {
+			// Stage 1: Start wave animation
+			const bars = worksBars.querySelectorAll('.works-bar');
+			bars.forEach(bar => bar.classList.add('waving'));
+
+			// Stage 2: At 5.5s (after all bars finish waving), combine bars into tall rect
+			setTimeout(() => {
+				worksBars.classList.add('combining');
+			}, 5500);
+
+			// Stage 3: At 6.1s (after combine completes), make bars invisible and show expanding rect
+			setTimeout(() => {
+				worksBars.style.opacity = '0';
+				worksRect.classList.add('expanding');
+			}, 6100);
+
+			// Stage 4: At 6.9s (after expand completes), pause briefly, then split rect and reveal text
+			setTimeout(() => {
+				// Brief pause
+				setTimeout(() => {
+					worksRect.classList.add('splitting');
+					revealWorksText();
+				}, 200);
+			}, 6900);
+		};
+
+		function revealWorksText() {
+			worksText.classList.add('revealing');
+			const words = WORKS_TEXT.split(' ');
+			
+			worksText.innerHTML = words.map(w => {
+				return `<span class="word">${w}</span>`;
+			}).join(' ');
+
+			const wordElements = worksText.querySelectorAll('.word');
+			wordElements.forEach((word, i) => {
+				setTimeout(() => {
+					word.style.animationDelay = '0s';
+					word.style.opacity = '1';
+				}, i * 150);
+			});
+		}
+	}
+
+	// ============================================
+	// EXPERIENCE ANIMATION SEQUENCE (card-experience)
+	// ============================================
+	const experienceBars = document.getElementById('experience-bars');
+	const experienceRect = document.getElementById('experience-rect');
+	const experienceOverlay = document.getElementById('experience-overlay');
+
+	if (experienceBars && experienceRect && experienceOverlay) {
+		const experienceContainer = document.querySelector('.card-experience .experience-container');
+		
+		// Expose function globally so it can be called after card entrance
+		window.startExperienceAnimation = function() {
+			// Stage 1: Start wave animation
+			const bars = experienceBars.querySelectorAll('.experience-bar');
+			bars.forEach(bar => bar.classList.add('waving'));
+
+			// Stage 2: At 5.5s (after all bars finish waving), combine bars into tall rect
+			setTimeout(() => {
+				experienceBars.classList.add('combining');
+			}, 5500);
+
+			// Stage 3: At 6.1s (after combine completes), make bars invisible and show expanding rect
+			setTimeout(() => {
+				experienceBars.style.opacity = '0';
+				experienceRect.classList.add('expanding');
+			}, 6100);
+
+			// Stage 4: At 6.9s (after expand completes), pause briefly, then split rect and fade
+			setTimeout(() => {
+				setTimeout(() => {
+					experienceRect.classList.add('splitting');
+					
+					// Reveal pie chart content after animation completes
+					setTimeout(() => {
+						if (experienceContainer) {
+							experienceContainer.classList.add('visible');
+						}
+					}, 900); // Wait for split animation to complete
+				}, 200);
+			}, 6900);
+		};
 	}
 });

@@ -219,35 +219,77 @@
 	<section class="content-section" id="content-section">
 		<div class="cards-grid">
 			<div class="card-glass card-toolbox">
-				<!-- Tool box content will go here -->
+				<!-- Intro animation overlay — replaced by hover-info content later -->
+				<div class="intro-overlay" id="intro-overlay" aria-live="polite">
+					<!-- Stage 1 & 2: four gold bars -->
+					<div class="intro-bars" id="intro-bars">
+						<span class="intro-bar"></span>
+						<span class="intro-bar"></span>
+						<span class="intro-bar"></span>
+						<span class="intro-bar"></span>
+					</div>
+					<!-- Stage 3: combined tall rect that expands to fill card -->
+					<div class="intro-rect" id="intro-rect"></div>
+					<!-- Stage 4: intro text, revealed word by word -->
+					<p class="intro-text" id="intro-text" aria-label="Hey, My name is David. I am a Fullstack Web Developer with experience in Game Development and Graphics Design."></p>
+				<!-- Yellow transition overlay for text changes -->
+				<div class="text-transition-overlay" id="text-transition-overlay"></div>
+			</div>
 			</div>
 			<div class="card-glass card-works">
-				<!-- Works content will go here -->
+				<!-- Loading animation overlay -->
+				<div class="works-overlay" id="works-overlay" aria-live="polite">
+					<!-- Stage 1 & 2: four gold bars -->
+					<div class="works-bars" id="works-bars">
+						<span class="works-bar"></span>
+						<span class="works-bar"></span>
+						<span class="works-bar"></span>
+						<span class="works-bar"></span>
+					</div>
+					<!-- Stage 3: combined tall rect that expands to fill card -->
+					<div class="works-rect" id="works-rect"></div>
+					<!-- Stage 4: works text, revealed word by word -->
+					<p class="works-text" id="works-text" aria-label="Portfolio content coming soon"></p>
+				</div>
+				<!-- Works content slot -->
+				<div class="works-content" id="works-content" style="display:none;"></div>
 			</div>
 			<div class="card-glass card-experience">
+				<!-- Loading animation overlay -->
+				<div class="experience-overlay" id="experience-overlay" aria-live="polite">
+					<!-- Stage 1 & 2: four gold bars -->
+					<div class="experience-bars" id="experience-bars">
+						<span class="experience-bar"></span>
+						<span class="experience-bar"></span>
+						<span class="experience-bar"></span>
+						<span class="experience-bar"></span>
+					</div>
+					<!-- Stage 3: combined tall rect that expands to fill card -->
+					<div class="experience-rect" id="experience-rect"></div>
+				</div>
 				<div class="experience-container">
 					<div class="experience-top">
 						<div class="pie-chart-wrapper">
 							<svg class="pie-chart" viewBox="-20 -20 240 240">
-								<!-- Game Development: 25% (90 degrees) -->
-								<path class="pie-slice" data-category="game-dev" data-years="0.5" 
-									d="M 100 100 L 100 0 A 100 100 0 0 1 200 100 Z"
-									fill="#d4af37"/>
-								
-								<!-- Front End: 30% (108 degrees) -->
-								<path class="pie-slice" data-category="front-end" data-years="0.6"
-									d="M 100 100 L 200 100 A 100 100 0 0 1 130 186 Z"
-									fill="#f4d03f"/>
-								
-								<!-- Back End: 25% (90 degrees) -->
-								<path class="pie-slice" data-category="back-end" data-years="0.5"
-									d="M 100 100 L 130 186 A 100 100 0 0 1 0 100 Z"
-									fill="#c9a227"/>
-								
-								<!-- Graphics Design: 20% (72 degrees) -->
-								<path class="pie-slice" data-category="graphics" data-years="0.4"
-									d="M 100 100 L 0 100 A 100 100 0 0 1 100 0 Z"
-									fill="#b8941f"/>
+							<!-- Game Development: 50% (180 degrees) - Right half -->
+							<path class="pie-slice" data-category="game-dev" data-years="5" 
+								d="M 100 100 L 100 0 A 100 100 0 1 1 100 200 Z"
+							fill="#b8941f"/>
+						
+						<!-- Graphics Design: 30% (108 degrees) -->
+						<path class="pie-slice" data-category="graphics" data-years="3"
+							d="M 100 100 L 100 200 A 100 100 0 0 1 4.9 69.1 Z"
+							fill="#e5c100"/>
+						
+					<!-- Back End: 10% (36 degrees) -->
+					<path class="pie-slice" data-category="back-end" data-years="1"
+						d="M 100 100 L 4.9 69.1 A 100 100 0 0 1 41.2 19.1 Z"
+						fill="#d4af37"/>
+					
+					<!-- Front End: 10% (36 degrees) -->
+					<path class="pie-slice" data-category="front-end" data-years="1"
+						d="M 100 100 L 41.2 19.1 A 100 100 0 0 1 100 0 Z"
+						fill="#c9a227"/>
 							</svg>
 						</div>
 						
@@ -259,7 +301,7 @@
 						</div>
 					</div>
 					
-					<h2 class="experience-title">2 YEARS</h2>
+					<h2 class="experience-title">10 YEARS</h2>
 				</div>
 			</div>
 		</div>

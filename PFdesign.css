@@ -50,10 +50,6 @@ body {
 	will-change: transform;
 }
 
-.hero:hover {
-	/* scale handled by JS tilt loop */
-}
-
 .hero::after {
 	content: '';
 	position: absolute;
@@ -280,6 +276,14 @@ body {
 	width: 100%;
 	gap: 1.5rem;
 	position: relative;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.8s ease;
+}
+
+.experience-container.visible {
+	opacity: 1;
+	pointer-events: auto;
 }
 
 .experience-top {
@@ -313,37 +317,37 @@ body {
 
 /* Exploded gap between slices */
 .pie-slice[data-category="game-dev"] {
-	transform: translate(5px, -5px);
-}
-.pie-slice[data-category="front-end"] {
-	transform: translate(5px, 5px);
-}
-.pie-slice[data-category="back-end"] {
-	transform: translate(-5px, 5px);
+	transform: translate(8px, 0);
 }
 .pie-slice[data-category="graphics"] {
-	transform: translate(-5px, -5px);
+	transform: translate(-6px, 5px);
+}
+.pie-slice[data-category="back-end"] {
+	transform: translate(-6px, -6px);
+}
+.pie-slice[data-category="front-end"] {
+	transform: translate(-4px, -8px);
 }
 
 /* Hover: push further out + glow */
 .pie-slice[data-category="game-dev"]:hover,
 .pie-slice[data-category="game-dev"].label-hover {
-	transform: translate(10px, -10px) scale(1.06);
-	filter: brightness(1.4) drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
-}
-.pie-slice[data-category="front-end"]:hover,
-.pie-slice[data-category="front-end"].label-hover {
-	transform: translate(10px, 10px) scale(1.06);
-	filter: brightness(1.4) drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
-}
-.pie-slice[data-category="back-end"]:hover,
-.pie-slice[data-category="back-end"].label-hover {
-	transform: translate(-10px, 10px) scale(1.06);
+	transform: translate(16px, 0) scale(1.06);
 	filter: brightness(1.4) drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
 }
 .pie-slice[data-category="graphics"]:hover,
 .pie-slice[data-category="graphics"].label-hover {
-	transform: translate(-10px, -10px) scale(1.06);
+	transform: translate(-12px, 10px) scale(1.06);
+	filter: brightness(1.4) drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
+}
+.pie-slice[data-category="back-end"]:hover,
+.pie-slice[data-category="back-end"].label-hover {
+	transform: translate(-12px, -12px) scale(1.06);
+	filter: brightness(1.4) drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
+}
+.pie-slice[data-category="front-end"]:hover,
+.pie-slice[data-category="front-end"].label-hover {
+	transform: translate(-8px, -16px) scale(1.06);
 	filter: brightness(1.4) drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
 }
 
@@ -719,4 +723,462 @@ body {
 .tech-stack.card-exiting {
 	animation: exitToBottom 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
 	animation-delay: 0.3s;
+}
+/* ============================================
+   INTRO ANIMATION (CARD-TOOLBOX)
+   ============================================ */
+
+.intro-overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 100;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+	/* Overlay will be removed after animation completes */
+}
+
+/* ── Stage 1 & 2: four gold bars wave and combine ── */
+.intro-bars {
+	position: absolute;
+	display: flex;
+	gap: 12px;
+	align-items: flex-end;
+	height: 25px;
+}
+
+.intro-bar {
+	width: 16px;
+	height: 25px;
+	background: linear-gradient(180deg, #ffed4e 0%, #ffd700 50%, #dbb13a 100%);
+	border-radius: 3px;
+	box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+	transform-origin: center bottom;
+	opacity: 1;
+	/* Animation only starts when .waving class is added by JS */
+}
+
+/* Wave animation: bars grow/shrink in succession - only when active */
+.intro-bar.waving:nth-child(1) { animation: barWave 1.25s ease-in-out 0s 4; }
+.intro-bar.waving:nth-child(2) { animation: barWave 1.25s ease-in-out 0.15s 4; }
+.intro-bar.waving:nth-child(3) { animation: barWave 1.25s ease-in-out 0.3s 4; }
+.intro-bar.waving:nth-child(4) { animation: barWave 1.25s ease-in-out 0.45s 4; }
+
+@keyframes barWave {
+	0%, 100% { transform: scaleY(1); }
+	50% { transform: scaleY(2.2); }
+}
+
+/* After wave completes (5s), bars combine into tall rect */
+.intro-bars.combining {
+	animation: barsCombine 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+	gap: 0;
+}
+
+.intro-bars.combining .intro-bar {
+	animation: none !important;
+	transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+	border-radius: 0;
+	box-shadow: none;
+}
+
+@keyframes barsCombine {
+	0% {
+		gap: 12px;
+		height: 25px;
+	}
+	100% {
+		gap: 0;
+		height: calc(100% - 5rem); /* Touch top & bottom of card (minus padding) */
+	}
+}
+
+/* ── Stage 3: combined rect expands to fill card ── */
+.intro-rect {
+	position: absolute;
+	inset: 2.5rem;
+	background: linear-gradient(180deg, #ffed4e 0%, #ffd700 50%, #dbb13a 100%);
+	border-radius: 2px;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.intro-rect.expanding {
+	opacity: 1;
+	animation: rectExpand 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes rectExpand {
+	0% {
+		width: 64px;
+		height: calc(100% - 5rem);
+		left: 50%;
+		top: 2.5rem;
+		transform: translateX(-50%);
+		border-radius: 3px;
+	}
+	60% {
+		width: calc(100% - 5rem);
+		height: calc(100% - 5rem);
+		left: 2.5rem;
+		top: 2.5rem;
+		transform: translateX(0);
+		border-radius: 3px;
+	}
+	100% {
+		width: 100%;
+		height: 100%;
+		left: 0;
+		top: 0;
+		transform: translateX(0);
+		border-radius: 32px; /* Match card border-radius */
+	}
+}
+
+/* ── Stage 4: rect splits & fades; text appears word by word ── */
+.intro-rect.splitting {
+	animation: rectSplit 0.9s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+@keyframes rectSplit {
+	0% {
+		clip-path: inset(0 0 0 0);
+		opacity: 1;
+	}
+	50% {
+		clip-path: inset(0 0 0 50%);
+		opacity: 1;
+	}
+	100% {
+		clip-path: inset(0 0 0 100%);
+		opacity: 0;
+	}
+}
+
+/* Intro text: default state hidden, words fade in via JS */
+.intro-text {
+	position: absolute;
+	inset: 2.5rem;
+	margin: 0;
+	font-family: 'Bodoni Moda', serif;
+	font-size: 1.1rem;
+	line-height: 1.6;
+	color: #d4af37;
+	text-align: center;
+	opacity: 0;
+	pointer-events: auto;
+}
+
+/* Flex layout only when revealing word-by-word */
+.intro-text.revealing {
+	opacity: 1;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.35rem;
+}
+
+/* Normal block layout for category descriptions */
+.intro-text:not(.revealing) {
+	display: block;
+	padding: 1.5rem;
+}
+
+.intro-text .word {
+	opacity: 0;
+	display: inline-block;
+	animation: wordFadeIn 0.4s ease-out forwards;
+}
+
+.intro-text .word.highlight {
+	color: #ffffff;
+	font-weight: 500;
+}
+
+/* Highlight class for category descriptions */
+.intro-text .highlight {
+	color: #ffffff;
+	font-weight: 500;
+}
+
+@keyframes wordFadeIn {
+	from { opacity: 0; transform: translateY(8px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+/* Glow wave animation */
+@keyframes glowWave {
+	0% {
+		text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+	}
+	15% {
+		text-shadow: 0 0 20px rgba(212, 175, 55, 0.8), 0 0 30px rgba(255, 215, 0, 0.6);
+	}
+	30% {
+		text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+	}
+	100% {
+		text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+	}
+}
+
+.intro-text.glow-wave {
+	animation: glowWave 2s ease-in-out;
+}
+/* Glow wave animation - word by word cascade */
+@keyframes wordGlow {
+0% {
+text-shadow: none;
+}
+30% {
+text-shadow: 
+0 0 20px rgba(255, 215, 0, 1),
+0 0 40px rgba(255, 215, 0, 0.8),
+0 0 60px rgba(255, 215, 0, 0.6),
+0 0 80px rgba(255, 215, 0, 0.4);
+filter: brightness(1.4);
+}
+100% {
+text-shadow: none;
+}
+}
+
+.intro-text .word.glowing {
+animation: wordGlow 0.8s ease-out;
+}
+
+/* Accumulated glow effect - gets brighter as more words glow */
+.intro-text.glow-active {
+filter: brightness(1.1) drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+transition: filter 0.3s ease;
+}
+
+/* ============================================================
+   TEXT TRANSITION OVERLAY (for pie chart hover text changes)
+   ============================================================ */
+.text-transition-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(135deg, #ffd700 0%, #e5c100 100%);
+	transform: translateX(-100%);
+	z-index: 10;
+	pointer-events: none;
+}
+
+.text-transition-overlay.slide-in {
+	animation: slideIn 0.4s ease-out forwards;
+}
+
+.text-transition-overlay.slide-out {
+	animation: slideOut 0.4s ease-in forwards;
+}
+
+@keyframes slideIn {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+
+@keyframes slideOut {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(100%);
+	}
+}
+
+/* ============================================
+   EXPERIENCE CARD ANIMATION (card-experience)
+   ============================================ */
+
+.experience-overlay {
+position: absolute;
+inset: 0;
+z-index: 100;
+display: flex;
+align-items: center;
+justify-content: center;
+pointer-events: none;
+}
+
+/*  Stage 1 & 2: four gold bars wave and combine  */
+.experience-bars {
+position: absolute;
+display: flex;
+gap: 12px;
+align-items: flex-end;
+height: 25px;
+}
+
+.experience-bar {
+width: 16px;
+height: 25px;
+background: linear-gradient(180deg, #ffed4e 0%, #ffd700 50%, #dbb13a 100%);
+border-radius: 3px;
+box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+transform-origin: center bottom;
+opacity: 1;
+}
+
+/* Bars wave when .waving class is added - each bar with different delay */
+.experience-bar.waving:nth-child(1) { animation: barWave 1.25s ease-in-out 0s 4; }
+.experience-bar.waving:nth-child(2) { animation: barWave 1.25s ease-in-out 0.15s 4; }
+.experience-bar.waving:nth-child(3) { animation: barWave 1.25s ease-in-out 0.3s 4; }
+.experience-bar.waving:nth-child(4) { animation: barWave 1.25s ease-in-out 0.45s 4; }
+
+/* Stage 2: bars combine into tall rect when .combining class added */
+.experience-bars.combining {
+animation: barsCombine 0.6s cubic-bezier(0.68, -0.25, 0.27, 1.25) forwards;
+}
+
+.experience-bars.combining .experience-bar {
+animation: none !important;
+transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+border-radius: 0;
+box-shadow: none;
+}
+
+/*  Stage 3: the tall rect expands to fill the card  */
+.experience-rect {
+position: absolute;
+width: 16px;
+height: 25px;
+left: 50%;
+top: 50%;
+transform: translate(-50%, -50%);
+background: linear-gradient(135deg, #ffed4e 0%, #ffd700 50%, #dbb13a 100%);
+border-radius: 3px;
+box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+opacity: 0;
+pointer-events: none;
+}
+
+.experience-rect.expanding {
+opacity: 1;
+animation: rectExpand 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.experience-rect.splitting {
+width: 100%;
+height: 100%;
+left: 0;
+top: 0;
+transform: translate(0, 0);
+border-radius: 32px;
+animation: rectSplit 0.9s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+/* ============================================
+   WORKS CARD ANIMATION (card-works)
+   ============================================ */
+
+.works-overlay {
+position: absolute;
+inset: 0;
+z-index: 100;
+display: flex;
+align-items: center;
+justify-content: center;
+pointer-events: none;
+}
+
+/*  Stage 1 & 2: four gold bars wave and combine  */
+.works-bars {
+position: absolute;
+display: flex;
+gap: 12px;
+align-items: flex-end;
+height: 25px;
+}
+
+.works-bar {
+width: 16px;
+height: 25px;
+background: linear-gradient(180deg, #ffed4e 0%, #ffd700 50%, #dbb13a 100%);
+border-radius: 3px;
+box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+transform-origin: center bottom;
+opacity: 1;
+}
+
+/* Wave animation - only when active */
+.works-bar.waving:nth-child(1) { animation: barWave 1.25s ease-in-out 0s 4; }
+.works-bar.waving:nth-child(2) { animation: barWave 1.25s ease-in-out 0.15s 4; }
+.works-bar.waving:nth-child(3) { animation: barWave 1.25s ease-in-out 0.3s 4; }
+.works-bar.waving:nth-child(4) { animation: barWave 1.25s ease-in-out 0.45s 4; }
+
+/* After wave completes, bars combine into tall rect */
+.works-bars.combining {
+animation: barsCombine 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+gap: 0;
+}
+
+.works-bars.combining .works-bar {
+animation: none !important;
+transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+border-radius: 0;
+box-shadow: none;
+}
+
+/*  Stage 3: combined rect expands to fill card  */
+.works-rect {
+position: absolute;
+inset: 2.5rem;
+background: linear-gradient(180deg, #ffed4e 0%, #ffd700 50%, #dbb13a 100%);
+border-radius: 2px;
+opacity: 0;
+pointer-events: none;
+}
+
+.works-rect.expanding {
+opacity: 1;
+animation: rectExpand 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/*  Stage 4: rect splits & fades; text appears word by word  */
+.works-rect.splitting {
+animation: rectSplit 0.9s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+/* Works text styles */
+.works-text {
+position: absolute;
+inset: 2.5rem;
+margin: 0;
+font-family: 'Bodoni Moda', serif;
+font-size: 1.1rem;
+line-height: 1.6;
+color: #d4af37;
+text-align: center;
+display: flex;
+flex-wrap: wrap;
+align-items: center;
+justify-content: center;
+gap: 0.35rem;
+opacity: 0;
+pointer-events: auto;
+}
+
+.works-text.revealing {
+opacity: 1;
+}
+
+.works-text .word {
+opacity: 0;
+display: inline-block;
+animation: wordFadeIn 0.4s ease-out forwards;
+}
+
+.works-text .word.highlight {
+color: #ffffff;
+font-weight: 500;
 }
