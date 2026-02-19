@@ -274,7 +274,12 @@ document.addEventListener('DOMContentLoaded', () => {
 							window.startExperienceAnimation();
 						}
 					}, 1900);
-				}, 100);
+					// Start auto-cycle 17 seconds after hero card click
+					setTimeout(() => {
+						if (window.autoCyclePieSlices) {
+							window.autoCyclePieSlices();
+						}
+					}, 17000);				}, 100);
 			}, 1000);
 
 			setTimeout(() => {
@@ -477,16 +482,73 @@ document.addEventListener('DOMContentLoaded', () => {
 		let slideInTimeout = null;
 		let slideOutTimeout = null;
 		let resetTimeout = null;
+		let glowInterval = null;
 		
 		// Match the exact structure created by revealTextWordByWord() with word spans and highlights
 		const originalText = '<span class="word">Hey,</span> <span class="word">My</span> <span class="word">name</span> <span class="word">is</span> <span class="word highlight">David.</span> <span class="word">I</span> <span class="word">am</span> <span class="word">a</span> <span class="word highlight">Fullstack</span> <span class="word highlight">Web</span> <span class="word highlight">Developer</span> <span class="word">with</span> <span class="word">experience</span> <span class="word">in</span> <span class="word highlight">Game</span> <span class="word highlight">Development</span> <span class="word">and</span> <span class="word highlight">Graphics</span> <span class="word highlight">Design.</span>';
 		
 		const categoryDescriptions = {
-			'game-dev': "Game Development is where my <span class='highlight'>journey</span> started. I was introduced to coding in <span class='highlight'>2nd grade</span> and fell in love with it. This is where I solidified the ability of thinking like a <span class='highlight'>problem solver</span> and in the next <span class='highlight'>five years</span> learned <span class='highlight'>Scratch</span>, <span class='highlight'>Python</span> and a touch of <span class='highlight'>JS</span>.",
-			'graphics': "Graphics Design description goes here.",
-			'front-end': "Front-End development description goes here.",
-			'back-end': "Back-End development description goes here."
-		};
+			'game-dev': "Game Development is where my <span class='highlight glow-word'>journey</span> started. I was introduced to coding in <span class='highlight glow-word'>2nd grade</span> and fell in love with it. This is where I solidified the ability of thinking like a <span class='highlight glow-word'>problem solver</span> and in the next <span class='highlight glow-word'>five years</span> learned <span class='highlight glow-word'>Scratch</span>, <span class='highlight glow-word'>Python</span> and a touch of <span class='highlight glow-word'>JS</span>.",
+		'graphics': "Always loved drawing and art but I started taking Graphics Design Classes in <span class='highlight glow-word'>10th grade</span>. After that I took <span class='highlight glow-word'>Adobe Certification</span> for <span class='highlight glow-word'>Photoshop</span> and <span class='highlight glow-word'>Illustrator</span> classes in <span class='highlight glow-word'>11th/12th</span> (Yes i'm Adobe Certified).",
+	'front-end': "<span class='highlight glow-word'>Web Development</span> is actually a more recent endeavor for me. I didn't want to wait until college so I started with <span class='highlight glow-word'>HTML</span> and <span class='highlight glow-word'>CSS</span>. <span class='highlight glow-word'>JS</span> is still giving me trouble (: )",
+	'back-end': "Figuring out that there were two sides to the Web Dev coin took me longer than I'd like to admit. I practiced my <span class='highlight glow-word'>Backend Dev</span> skills with <span class='highlight glow-word'>PostgreSQL</span>, <span class='highlight glow-word'>Node.js</span> and <span class='highlight glow-word'>frameworks</span> like <span class='highlight glow-word'>Neon</span> for storing data in my project <span class='highlight glow-word'>~TMR~</span> which you'll see in <span class='highlight glow-word'>My Works</span>."
+	};
+			// Glow wave animation for word spans
+		function startWordGlowWave() {
+			const wordSpans = introTextElement.querySelectorAll('.word');
+			if (wordSpans.length === 0) return;
+			
+			introTextElement.classList.add('glow-active');
+			
+			// Glow each word in sequence with increasing brightness
+			for (let i = 0; i < wordSpans.length; i++) {
+				setTimeout(() => {
+					wordSpans[i].classList.add('glowing');
+					// Increase overall brightness as we progress
+					const progress = (i + 1) / wordSpans.length;
+					introTextElement.style.filter = `brightness(${1.1 + progress * 0.3}) drop-shadow(0 0 ${10 + progress * 20}px rgba(255, 215, 0, ${0.3 + progress * 0.4}))`;
+					
+					// Remove glowing class after animation
+					setTimeout(() => {
+						wordSpans[i].classList.remove('glowing');
+					}, 800);
+				}, i * 120); // 120ms between each word glow
+			}
+			
+			// Reset after animation completes
+			setTimeout(() => {
+				introTextElement.classList.remove('glow-active');
+				introTextElement.style.filter = '';
+			}, wordSpans.length * 120 + 1000);
+		}
+		
+		// Glow wave for category descriptions (glow highlighted words)
+		function startCategoryGlowWave() {
+			const glowWords = introTextElement.querySelectorAll('.glow-word');
+			if (glowWords.length === 0) return;
+			
+			introTextElement.style.transition = 'filter 0.3s ease';
+			
+			// Glow each highlighted word in sequence
+			for (let i = 0; i < glowWords.length; i++) {
+				setTimeout(() => {
+					glowWords[i].classList.add('glowing');
+					// Increase overall brightness as we progress
+					const progress = (i + 1) / glowWords.length;
+					introTextElement.style.filter = `brightness(${1.1 + progress * 0.3}) drop-shadow(0 0 ${10 + progress * 20}px rgba(255, 215, 0, ${0.3 + progress * 0.4}))`;
+					
+					// Remove glowing class after animation
+					setTimeout(() => {
+						glowWords[i].classList.remove('glowing');
+					}, 800);
+				}, i * 250); // 250ms between each highlight glow
+			}
+			
+			// Reset after animation completes
+			setTimeout(() => {
+				introTextElement.style.filter = '';
+			}, glowWords.length * 250 + 1000);
+		}
 		
 		function transitionText(newText, category) {
 			// Clear any pending timeouts from previous transitions
@@ -494,6 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (slideInTimeout) clearTimeout(slideInTimeout);
 			if (slideOutTimeout) clearTimeout(slideOutTimeout);
 			if (resetTimeout) clearTimeout(resetTimeout);
+			if (glowInterval) clearInterval(glowInterval);
 			
 			// Reset overlay state
 			textOverlay.classList.remove('slide-in', 'slide-out');
@@ -532,6 +595,21 @@ document.addEventListener('DOMContentLoaded', () => {
 				resetTimeout = setTimeout(() => {
 					textOverlay.classList.remove('slide-out');
 					isTransitioning = false;
+					
+					// Trigger glow animation after transition completes
+					if (category === null) {
+						// Returning to original text - start word glow wave and repeat every 60 seconds
+						setTimeout(() => {
+							startWordGlowWave();
+							glowInterval = setInterval(startWordGlowWave, 60000);
+						}, 500);
+				} else {
+					// Category description - start highlight glow wave and repeat every 60 seconds
+						setTimeout(() => {
+							startCategoryGlowWave();
+							glowInterval = setInterval(startCategoryGlowWave, 60000);
+						}, 500);
+					}
 				}, 400);
 			}, 400);
 		}
@@ -575,6 +653,104 @@ document.addEventListener('DOMContentLoaded', () => {
 				showCategoryText(label.dataset.category);
 			});
 			label.addEventListener('mouseleave', returnToOriginal);
+		});
+		
+		// ============================================
+		// AUTO-CYCLE THROUGH PIE SLICES
+		// ============================================
+		let autoCycleTimeout = null;
+		let isUserInteracting = false;
+		
+	window.autoCyclePieSlices = function() {
+		if (isUserInteracting) return;
+		
+		const categories = ['game-dev', 'graphics', 'front-end', 'back-end'];
+		let currentIndex = 0;
+		
+		function activateNextSlice() {
+			if (isUserInteracting) return;
+			
+			const category = categories[currentIndex];
+			const slice = document.querySelector(`.pie-slice[data-category="${category}"]`);
+			const label = document.querySelector(`.exp-label[data-category="${category}"]`);
+			
+			if (slice && label) {
+				// Add hover effect to slice
+				slice.classList.add('label-hover');
+				
+				// Show category text
+				showCategoryText(category);
+				
+				// Show years in title
+				const years = slice.dataset.years;
+					if (expTitle) {
+						expTitle.style.opacity = '0';
+						setTimeout(() => {
+							expTitle.textContent = `${years} YRS`;
+							expTitle.style.opacity = '1';
+						}, 150);
+					}
+					label.classList.add('active');
+					
+					// Remove hover after duration
+					setTimeout(() => {
+						if (!isUserInteracting) {
+							slice.classList.remove('label-hover');
+							label.classList.remove('active');
+							
+							currentIndex++;
+							if (currentIndex < categories.length) {
+								// Move to next slice after brief pause
+								setTimeout(activateNextSlice, 800);
+							} else {
+								// All slices shown, return to original
+								setTimeout(() => {
+									if (!isUserInteracting) {
+										returnToOriginal();
+										if (expTitle) {
+											expTitle.style.opacity = '0';
+											setTimeout(() => {
+												expTitle.textContent = "10 YEARS";
+												expTitle.style.opacity = '1';
+											}, 150);
+										}
+								}
+								
+								// Restart the cycle after a longer pause
+								autoCycleTimeout = setTimeout(window.autoCyclePieSlices, 30000); // Restart every 30 seconds
+								}, 1000);
+							}
+						}
+					}, 6000); // Show each slice for 6 seconds
+				}
+			}
+			
+			activateNextSlice();
+		};
+		
+		// Detect user interaction to pause auto-cycle
+		pieSlices.forEach(slice => {
+			slice.addEventListener('mouseenter', () => {
+				isUserInteracting = true;
+				if (autoCycleTimeout) clearTimeout(autoCycleTimeout);
+			});
+			slice.addEventListener('mouseleave', () => {
+				setTimeout(() => {
+					isUserInteracting = false;
+				}, 500);
+			});
+		});
+		
+		expLabels.forEach(label => {
+			label.addEventListener('mouseenter', () => {
+				isUserInteracting = true;
+				if (autoCycleTimeout) clearTimeout(autoCycleTimeout);
+			});
+			label.addEventListener('mouseleave', () => {
+				setTimeout(() => {
+					isUserInteracting = false;
+				}, 500);
+			});
 		});
 	}
 

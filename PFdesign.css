@@ -390,6 +390,9 @@ body {
 	padding: 0.6rem 2.5rem;
 	width: fit-content;
 	transition: opacity 0.3s ease;
+	opacity: 1 !important; /* Always visible, even during loading animation */
+	position: relative;
+	z-index: 1;
 }
 
 /* Enhanced glass edge lighting */
@@ -946,6 +949,11 @@ text-shadow: none;
 }
 
 .intro-text .word.glowing {
+animation: wordGlow 0.8s ease-out;
+}
+
+/* Glow animation for highlighted words in category descriptions */
+.intro-text .glow-word.glowing {
 animation: wordGlow 0.8s ease-out;
 }
 
