@@ -248,11 +248,29 @@
 					</div>
 					<!-- Stage 3: combined tall rect that expands to fill card -->
 					<div class="works-rect" id="works-rect"></div>
-					<!-- Stage 4: works text, revealed word by word -->
-					<p class="works-text" id="works-text" aria-label="Portfolio content coming soon"></p>
 				</div>
-				<!-- Works content slot -->
-				<div class="works-content" id="works-content" style="display:none;"></div>
+				<div class="works-sheen-clip" aria-hidden="true"></div>
+				<div class="works-content" id="works-content" aria-label="Profile showcase">
+					<div class="works-pill works-pill-current" id="works-pill-current" aria-live="polite">My Web Dev Portfolio</div>
+					<div class="works-showcase-shell">
+						<button class="works-nav works-nav-prev" id="works-prev" type="button" aria-label="Show previous showcase slide">&lt;</button>
+						<div class="works-slide-stage">
+							<div class="works-slide-link" id="works-slide-link" role="button" tabindex="0" aria-label="Open My Web Dev Portfolio">
+								<article class="works-slide active" data-slide="0" data-title="My Web Dev Portfolio" aria-hidden="false">
+									<div class="works-slide-frame">
+										<img class="works-slide-media" src="./Port.png" alt="My Web Dev Portfolio screenshot" />
+									</div>
+								</article>
+								<article class="works-slide" data-slide="1" data-title="The TMR Project" aria-hidden="true">
+									<div class="works-slide-frame">
+										<video class="works-slide-media" src="./Screen Recording 2026-04-07 104904.mp4" aria-label="The TMR Project video preview" muted loop playsinline preload="metadata"></video>
+									</div>
+								</article>
+							</div>
+						</div>
+						<button class="works-nav works-nav-next" id="works-next" type="button" aria-label="Show next showcase slide">&gt;</button>
+					</div>
+				</div>
 			</div>
 			<div class="card-glass card-experience">
 				<!-- Loading animation overlay -->
@@ -346,5 +364,23 @@
 			</div>
 		</div>
 	</section>
+
+	<section class="showcase-page" id="showcase-page" aria-hidden="true">
+		<div class="showcase-page-shell">
+			<button class="showcase-page-back" id="showcase-back" type="button" aria-label="Return to portfolio">Back</button>
+			<div class="showcase-page-copy">
+				<p class="showcase-page-eyebrow">Showcase</p>
+				<h2 class="showcase-page-title" id="showcase-page-title">My Web Dev Portfolio</h2>
+				<p class="showcase-page-description" id="showcase-page-description">Detailed case study and project breakdown coming soon.</p>
+			</div>
+			<div class="showcase-page-frame">
+				<a class="showcase-page-linkpill" id="showcase-page-linkpill" href="#" target="_blank" rel="noopener noreferrer" aria-label="Go to project page">Go To Page...</a>
+				<img class="showcase-page-image is-active" id="showcase-page-image" src="./Port.png" alt="My Web Dev Portfolio screenshot" />
+				<video class="showcase-page-video" id="showcase-page-video" muted loop playsinline preload="metadata" controls></video>
+			</div>
+		</div>
+	</section>
+
+	<div class="showcase-transition" id="showcase-transition" aria-hidden="true"></div>
 </body>
 </html>

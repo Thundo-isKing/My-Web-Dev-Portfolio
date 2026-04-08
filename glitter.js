@@ -76,6 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
 	const heroCard = document.getElementById('hero-card');
 	const contentSection = document.getElementById('content-section');
 	const siteShell = document.querySelector('.site-shell');
+	let isAnimating = false;
+	let isContentActive = false;
+	let isShowcaseActive = false;
+	let isShowcaseTransitioning = false;
 
 	const allCards = [
 		{ el: document.querySelector('.card-toolbox'),    x: -1, y: 0 },
@@ -200,18 +204,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		tiltCards.forEach(card => {
 			let tx = 0, ty = 0, cx = 0, cy = 0, looping = false;
+			const hoverScale = card.classList.contains('card-works') ? 1 : 1.04;
 
 			function loop() {
 				cx += (tx - cx) * CARD_TILT_LERP;
 				cy += (ty - cy) * CARD_TILT_LERP;
 				card.style.transform =
-					`perspective(500px) rotateX(${cx}deg) rotateY(${cy}deg) scale(1.04)`;
+					`perspective(500px) rotateX(${cx}deg) rotateY(${cy}deg) scale(${hoverScale})`;
 				if (Math.abs(tx - cx) > 0.02 || Math.abs(ty - cy) > 0.02) {
 					requestAnimationFrame(loop);
 				} else {
 					looping = false;
 					card.style.transform =
-						`perspective(500px) rotateX(${tx}deg) rotateY(${ty}deg) scale(${tx === 0 && ty === 0 ? 1 : 1.04})`;
+						`perspective(500px) rotateX(${tx}deg) rotateY(${ty}deg) scale(${tx === 0 && ty === 0 ? 1 : hoverScale})`;
 				}
 			}
 
@@ -236,9 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
 				start();
 			});
 		});
-
-		let isAnimating = false;
-		let isContentActive = false;
 
 		heroCard.addEventListener('click', () => {
 			if (isAnimating) return;
@@ -393,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 
 		window.addEventListener('wheel', (e) => {
-			if (!isContentActive || isAnimating) return;
+			if (!isContentActive || isAnimating || isShowcaseActive || isShowcaseTransitioning) return;
 
 			if (e.deltaY < 0) {
 				beginGesture();
@@ -855,16 +857,320 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	// ============================================
+	// WORKS SHOWCASE INTERACTIONS
+	// ============================================
+	const worksContent = document.getElementById('works-content');
+	const worksCard = document.querySelector('.card-works');
+	const worksPillCurrent = document.getElementById('works-pill-current');
+	const worksSlideLink = document.getElementById('works-slide-link');
+	const worksSlideStage = worksContent ? worksContent.querySelector('.works-slide-stage') : null;
+	const worksPrev = document.getElementById('works-prev');
+	const worksNext = document.getElementById('works-next');
+	const showcasePage = document.getElementById('showcase-page');
+	const showcasePageTitle = document.getElementById('showcase-page-title');
+	const showcasePageDescription = document.getElementById('showcase-page-description');
+	const showcasePageImage = document.getElementById('showcase-page-image');
+	const showcasePageVideo = document.getElementById('showcase-page-video');
+	const showcasePageLinkPill = document.getElementById('showcase-page-linkpill');
+	const showcaseTransition = document.getElementById('showcase-transition');
+	const showcaseBack = document.getElementById('showcase-back');
+	const worksSlides = worksContent ? Array.from(worksContent.querySelectorAll('.works-slide')) : [];
+	let worksCurrentIndex = 0;
+	let worksRotationTimer = null;
+	let worksShowcaseReady = false;
+	let worksIsTransitioning = false;
+	let worksPendingIndex = null;
+
+	if (worksContent && worksSlides.length > 0 && worksPillCurrent && worksSlideStage && worksCard && showcasePage && showcasePageTitle && showcasePageDescription && showcasePageImage && showcasePageVideo && showcasePageLinkPill && showcaseTransition) {
+		const worksSlideCount = worksSlides.length;
+		const worksTransitionDuration = 700;
+		const worksTransitionSwapAt = 340;
+		const showcaseDescriptions = {
+			'My Web Dev Portfolio': 'A closer look at the portfolio build, interface system, and motion language. Full project notes and section breakdowns will live here.',
+			'The TMR Project': 'TMR is a personal productivity and time-management web app built to help users organize their day in one place. Its purpose is to combine scheduling, task tracking, planning, and lightweight assistance into a single interface so users can manage deadlines, events, and daily responsibilities without bouncing between multiple tools. Core features in the current build include a schedule and todo system, a day-based planner/calendar view, quick schedule creation and editing, search, notes, theme customization, and account-based session controls. It also includes an assistant panel that helps users think through tasks, schedules, and deadlines, which makes TMR feel less like a static planner and more like an interactive planning workspace. Overall, the project is designed as a focused all-in-one organizer for managing time, responsibilities, and workflow more efficiently.',
+		};
+		const showcaseLinks = {
+			'The TMR Project': 'https://tmr-1.onrender.com',
+		};
+
+		function applyWorksShowcase(index) {
+			const nextIndex = (index + worksSlideCount) % worksSlideCount;
+			worksCurrentIndex = nextIndex;
+
+			worksSlides.forEach((slide, slideIndex) => {
+				const isActive = slideIndex === nextIndex;
+				slide.classList.toggle('active', isActive);
+				slide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+
+				const slideVideo = slide.querySelector('video.works-slide-media');
+				if (slideVideo) {
+					if (isActive) {
+						const playAttempt = slideVideo.play();
+						if (playAttempt && typeof playAttempt.catch === 'function') {
+							playAttempt.catch(() => {});
+						}
+					} else {
+						slideVideo.pause();
+						slideVideo.currentTime = 0;
+					}
+				}
+			});
+
+			if (worksSlideLink) {
+				const activeSlide = worksSlides[nextIndex];
+				worksPillCurrent.textContent = activeSlide.dataset.title || `Placeholder ${String(nextIndex + 1).padStart(2, '0')}`;
+				worksSlideLink.setAttribute('aria-label', `Open ${activeSlide.dataset.title}`);
+			}
+		}
+
+		function transitionWorksShowcase(index) {
+			const nextIndex = (index + worksSlideCount) % worksSlideCount;
+			if (nextIndex === worksCurrentIndex) return;
+
+			if (worksIsTransitioning) {
+				worksPendingIndex = nextIndex;
+				return;
+			}
+
+			worksIsTransitioning = true;
+			worksPendingIndex = null;
+
+			worksPillCurrent.classList.remove('is-switching');
+			worksSlideStage.classList.remove('is-switching');
+			void worksPillCurrent.offsetWidth;
+
+			worksPillCurrent.classList.add('is-switching');
+			worksSlideStage.classList.add('is-switching');
+
+			setTimeout(() => {
+				applyWorksShowcase(nextIndex);
+			}, worksTransitionSwapAt);
+
+			setTimeout(() => {
+				worksPillCurrent.classList.remove('is-switching');
+				worksSlideStage.classList.remove('is-switching');
+				worksIsTransitioning = false;
+
+				if (worksPendingIndex !== null && worksPendingIndex !== worksCurrentIndex) {
+					const pendingIndex = worksPendingIndex;
+					worksPendingIndex = null;
+					transitionWorksShowcase(pendingIndex);
+				}
+			}, worksTransitionDuration);
+		}
+
+		function stopWorksRotation() {
+			if (worksRotationTimer) {
+				clearInterval(worksRotationTimer);
+				worksRotationTimer = null;
+			}
+		}
+
+		function populateShowcasePage(slide) {
+			const media = slide.querySelector('.works-slide-media');
+			const title = slide.dataset.title || 'Project Showcase';
+			const projectLink = showcaseLinks[title] || '';
+			showcasePageTitle.textContent = title;
+			showcasePageDescription.textContent = showcaseDescriptions[title] || 'Detailed case study and project breakdown coming soon.';
+			showcasePageLinkPill.classList.toggle('is-active', Boolean(projectLink));
+			showcasePageLinkPill.href = projectLink || '#';
+
+			if (media) {
+				const tagName = media.tagName.toLowerCase();
+				showcasePageImage.classList.remove('is-active');
+				showcasePageVideo.classList.remove('is-active');
+				showcasePageVideo.pause();
+				showcasePageVideo.removeAttribute('src');
+				showcasePageVideo.load();
+
+				if (tagName === 'video') {
+					showcasePageVideo.src = media.getAttribute('src') || '';
+					showcasePageVideo.classList.add('is-active');
+					showcasePageVideo.load();
+					const playAttempt = showcasePageVideo.play();
+					if (playAttempt && typeof playAttempt.catch === 'function') {
+						playAttempt.catch(() => {});
+					}
+				} else {
+					showcasePageImage.src = media.getAttribute('src') || '';
+					showcasePageImage.alt = media.getAttribute('alt') || title;
+					showcasePageImage.classList.add('is-active');
+				}
+			}
+		}
+
+		function resetShowcaseTransition() {
+			showcaseTransition.classList.remove('active');
+			showcaseTransition.style.transition = 'none';
+			showcaseTransition.style.transform = 'translateX(0)';
+			showcaseTransition.style.opacity = '0';
+			showcaseTransition.style.clipPath = 'inset(0 0 0 100% round 32px)';
+			showcaseTransition.style.left = '0px';
+			showcaseTransition.style.top = '0px';
+			showcaseTransition.style.width = '0px';
+			showcaseTransition.style.height = '0px';
+			showcaseTransition.style.borderRadius = '32px';
+		}
+
+		function openShowcasePage() {
+			if (isShowcaseActive || isShowcaseTransitioning || worksIsTransitioning) return;
+
+			const activeSlide = worksSlides[worksCurrentIndex];
+			if (!activeSlide) return;
+
+			const showcaseFillDuration = 360;
+			const showcaseStretchDuration = 440;
+			const showcaseScreenFillDuration = 380;
+			const showcaseRevealDuration = 680;
+
+			isShowcaseTransitioning = true;
+			stopWorksRotation();
+			populateShowcasePage(activeSlide);
+
+			const rect = worksCard.getBoundingClientRect();
+			resetShowcaseTransition();
+			showcasePage.classList.remove('active');
+			showcasePage.setAttribute('aria-hidden', 'true');
+
+			showcaseTransition.style.left = `${rect.left}px`;
+			showcaseTransition.style.top = `${rect.top}px`;
+			showcaseTransition.style.width = `${rect.width}px`;
+			showcaseTransition.style.height = `${rect.height}px`;
+			showcaseTransition.style.borderRadius = '32px';
+			showcaseTransition.style.clipPath = 'inset(0 0 0 100% round 32px)';
+			showcaseTransition.classList.add('active');
+
+			requestAnimationFrame(() => {
+				showcaseTransition.style.transition = `clip-path ${showcaseFillDuration}ms cubic-bezier(0.22, 1, 0.36, 1), opacity 160ms ease`;
+				showcaseTransition.style.opacity = '1';
+				showcaseTransition.style.clipPath = 'inset(0 0 0 0 round 32px)';
+			});
+
+			setTimeout(() => {
+				showcaseTransition.style.transition = `top ${showcaseStretchDuration}ms cubic-bezier(0.22, 1, 0.36, 1), height ${showcaseStretchDuration}ms cubic-bezier(0.22, 1, 0.36, 1), border-radius ${showcaseStretchDuration}ms ease, clip-path 0ms linear`;
+				showcaseTransition.style.top = '0px';
+				showcaseTransition.style.height = `${window.innerHeight}px`;
+				showcaseTransition.style.borderRadius = '18px';
+			}, showcaseFillDuration + 30);
+
+			setTimeout(() => {
+				showcaseTransition.style.transition = `left ${showcaseScreenFillDuration}ms cubic-bezier(0.22, 1, 0.36, 1), width ${showcaseScreenFillDuration}ms cubic-bezier(0.22, 1, 0.36, 1), border-radius ${showcaseScreenFillDuration}ms ease`;
+				showcaseTransition.style.left = '0px';
+				showcaseTransition.style.width = `${window.innerWidth}px`;
+				showcaseTransition.style.borderRadius = '0px';
+			}, showcaseFillDuration + showcaseStretchDuration + 70);
+
+			setTimeout(() => {
+				showcasePage.classList.add('active');
+				showcasePage.setAttribute('aria-hidden', 'false');
+				showcaseTransition.style.transition = `transform ${showcaseRevealDuration}ms cubic-bezier(0.7, 0, 0.2, 1)`;
+				showcaseTransition.style.transform = 'translateX(-100%)';
+			}, showcaseFillDuration + showcaseStretchDuration + showcaseScreenFillDuration + 110);
+
+			setTimeout(() => {
+				resetShowcaseTransition();
+				isShowcaseActive = true;
+				isShowcaseTransitioning = false;
+			}, showcaseFillDuration + showcaseStretchDuration + showcaseScreenFillDuration + showcaseRevealDuration + 140);
+		}
+
+		function closeShowcasePage() {
+			if (!isShowcaseActive || isShowcaseTransitioning) return;
+			showcasePage.classList.remove('active');
+			showcasePage.setAttribute('aria-hidden', 'true');
+			showcasePageVideo.pause();
+			isShowcaseActive = false;
+			if (worksShowcaseReady) {
+				startWorksRotation();
+			}
+		}
+
+		function startWorksRotation() {
+			stopWorksRotation();
+			if (!worksShowcaseReady || isShowcaseActive || isShowcaseTransitioning) return;
+			worksRotationTimer = setInterval(() => {
+				transitionWorksShowcase(worksCurrentIndex + 1);
+			}, 5500);
+		}
+
+		if (worksPrev) {
+			worksPrev.addEventListener('click', () => {
+				transitionWorksShowcase(worksCurrentIndex - 1);
+				startWorksRotation();
+			});
+		}
+
+		if (worksNext) {
+			worksNext.addEventListener('click', () => {
+				transitionWorksShowcase(worksCurrentIndex + 1);
+				startWorksRotation();
+			});
+		}
+
+		worksContent.addEventListener('mouseenter', stopWorksRotation);
+		worksContent.addEventListener('mouseleave', () => {
+			if (worksShowcaseReady && !isShowcaseActive && !isShowcaseTransitioning) {
+				startWorksRotation();
+			}
+		});
+
+		worksContent.addEventListener('focusin', stopWorksRotation);
+		worksContent.addEventListener('focusout', event => {
+			if (!worksContent.contains(event.relatedTarget) && worksShowcaseReady && !isShowcaseActive && !isShowcaseTransitioning) {
+				startWorksRotation();
+			}
+		});
+
+		if (worksSlideLink) {
+			worksSlideLink.addEventListener('click', event => {
+				event.preventDefault();
+				openShowcasePage();
+			});
+
+			worksSlideLink.addEventListener('keydown', event => {
+				if (event.key === 'ArrowLeft') {
+					event.preventDefault();
+					transitionWorksShowcase(worksCurrentIndex - 1);
+					startWorksRotation();
+				}
+				if (event.key === 'ArrowRight') {
+					event.preventDefault();
+					transitionWorksShowcase(worksCurrentIndex + 1);
+					startWorksRotation();
+				}
+				if (event.key === 'Enter' || event.key === ' ') {
+					event.preventDefault();
+					openShowcasePage();
+				}
+			});
+		}
+
+		if (showcaseBack) {
+			showcaseBack.addEventListener('click', closeShowcasePage);
+		}
+
+		window.addEventListener('keydown', event => {
+			if (event.key === 'Escape') {
+				closeShowcasePage();
+			}
+		});
+
+		applyWorksShowcase(0);
+		window.startWorksShowcaseRotation = function() {
+			worksShowcaseReady = true;
+			applyWorksShowcase(worksCurrentIndex);
+			startWorksRotation();
+		};
+	}
+
+	// ============================================
 	// WORKS ANIMATION SEQUENCE (card-works)
 	// ============================================
 	const worksBars = document.getElementById('works-bars');
 	const worksRect = document.getElementById('works-rect');
-	const worksText = document.getElementById('works-text');
 	const worksOverlay = document.getElementById('works-overlay');
 
-	if (worksBars && worksRect && worksText && worksOverlay) {
-		const WORKS_TEXT = "Portfolio Showcase Coming Soon";
-
+	if (worksBars && worksRect && worksOverlay && worksContent) {
 		// Expose function globally so it can be called after card entrance
 		window.startWorksAnimation = function() {
 			// Stage 1: Start wave animation
@@ -887,27 +1193,15 @@ document.addEventListener('DOMContentLoaded', () => {
 				// Brief pause
 				setTimeout(() => {
 					worksRect.classList.add('splitting');
-					revealWorksText();
+					setTimeout(() => {
+						worksContent.classList.add('visible');
+						if (window.startWorksShowcaseRotation) {
+							window.startWorksShowcaseRotation();
+						}
+					}, 900);
 				}, 200);
 			}, 6900);
 		};
-
-		function revealWorksText() {
-			worksText.classList.add('revealing');
-			const words = WORKS_TEXT.split(' ');
-			
-			worksText.innerHTML = words.map(w => {
-				return `<span class="word">${w}</span>`;
-			}).join(' ');
-
-			const wordElements = worksText.querySelectorAll('.word');
-			wordElements.forEach((word, i) => {
-				setTimeout(() => {
-					word.style.animationDelay = '0s';
-					word.style.opacity = '1';
-				}, i * 150);
-			});
-		}
 	}
 
 	// ============================================
