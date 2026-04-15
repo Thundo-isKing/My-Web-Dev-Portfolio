@@ -723,7 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
 								}, 1000);
 							}
 						}
-					}, 6000); // Show each slice for 6 seconds
+								}, 10000); // Show each slice for 10 seconds
 				}
 			}
 			

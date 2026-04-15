@@ -335,9 +335,9 @@
 
 .glitter {
 	position: absolute;
-	background: #ffffff;
+	background: #ffd84d;
 	border-radius: 50%;
-	box-shadow: 0 0 15px #ffed4e, 0 0 30px #f0c05a, 0 0 50px rgba(255, 237, 78, 0.8);
+	box-shadow: 0 0 18px #ffe36a, 0 0 36px #ffd84d, 0 0 54px rgba(255, 216, 77, 0.9);
 	opacity: 1;
 	animation: glitterFlicker 0.7s steps(1, end) infinite;
 }

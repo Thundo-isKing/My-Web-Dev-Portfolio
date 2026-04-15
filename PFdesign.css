@@ -267,6 +267,10 @@ body {
 	transform: translateZ(0) scale(1);
 }
 
+.card-works::before {
+	display: none;
+}
+
 .card-works::after {
 	display: none;
 }
@@ -409,6 +413,56 @@ body {
 	opacity: 1 !important; /* Always visible, even during loading animation */
 	position: relative;
 	z-index: 1;
+}
+
+.experience-socials {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	width: 100%;
+	margin-top: -0.2rem;
+	position: relative;
+	z-index: 1;
+}
+
+.experience-social-link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	border: 1px solid rgba(212, 175, 55, 0.28);
+	background: radial-gradient(circle at 30% 30%, rgba(255, 244, 188, 0.18), rgba(138, 105, 20, 0.08));
+	color: #dbb13a;
+	text-decoration: none;
+	transition: color 0.3s ease, transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+	box-shadow: 0 0 12px rgba(219, 177, 58, 0.2);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+}
+
+.experience-social-link svg {
+	width: 23px;
+	height: 23px;
+	fill: currentColor;
+	filter: drop-shadow(0 0 8px rgba(219, 177, 58, 0.28));
+}
+
+.experience-social-link:hover,
+.experience-social-link:focus-visible {
+	color: #ffed4e;
+	transform: scale(1.15);
+	border-color: rgba(255, 237, 78, 0.55);
+	background: radial-gradient(circle at 30% 30%, rgba(255, 248, 196, 0.3), rgba(212, 175, 55, 0.16));
+	box-shadow: 0 0 18px rgba(255, 237, 78, 0.4), 0 0 28px rgba(212, 175, 55, 0.25);
+	outline: none;
+}
+
+.experience-social-link:focus-visible svg,
+.experience-social-link:hover svg {
+	filter: drop-shadow(0 0 12px rgba(255, 237, 78, 0.45));
 }
 
 /* Enhanced glass edge lighting */
@@ -1280,6 +1334,26 @@ animation: rectSplit 0.9s cubic-bezier(0.4, 0, 0.6, 1) forwards;
 	z-index: 4;
 }
 
+.works-sheen-clip::before {
+	content: '';
+	position: absolute;
+	top: -15%;
+	left: 0;
+	right: 0;
+	height: 70%;
+	background: radial-gradient(
+		ellipse 100% 90% at 50% 30%,
+		rgba(255, 255, 255, 0.15) 0%,
+		rgba(255, 255, 255, 0.1) 25%,
+		rgba(255, 255, 255, 0.06) 45%,
+		rgba(255, 255, 255, 0.03) 65%,
+		transparent 85%
+	);
+	border-radius: 32px 32px 50% 50%;
+	filter: blur(2px);
+	opacity: 1;
+}
+
 .works-sheen-clip::after {
 	content: '';
 	position: absolute;
@@ -1778,5 +1852,15 @@ animation: rectSplit 0.9s cubic-bezier(0.4, 0, 0.6, 1) forwards;
 
 	.works-slide-frame {
 		min-height: 0;
+	}
+
+	.experience-social-link {
+		width: 44px;
+		height: 44px;
+	}
+
+	.experience-social-link svg {
+		width: 21px;
+		height: 21px;
 	}
 }
