@@ -1,5 +1,10 @@
 // Mouse-reactive glitter movement
 document.addEventListener('DOMContentLoaded', () => {
+	const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+	if (isTouchDevice) {
+		document.body.classList.add('touch-device');
+	}
+
 	const bigRibbons = document.querySelectorAll(
 		'.ribbon-1, .ribbon-3, .ribbon-5, .ribbon-7, .ribbon-10, .ribbon-12, .ribbon-13, .ribbon-14, .ribbon-15, .ribbon-16'
 	);
@@ -30,16 +35,20 @@ document.addEventListener('DOMContentLoaded', () => {
 	let mouseY = window.innerHeight / 2;
 	let scrollY = window.scrollY;
 
-	document.addEventListener('mousemove', (e) => {
-		mouseX = e.clientX;
-		mouseY = e.clientY;
-	});
+	if (!isTouchDevice) {
+		document.addEventListener('mousemove', (e) => {
+			mouseX = e.clientX;
+			mouseY = e.clientY;
+		});
+	}
 
 	window.addEventListener('scroll', () => {
 		scrollY = window.scrollY;
 	}, { passive: true });
 
 	function updateGlitterPositions() {
+		if (isTouchDevice) return;
+
 		const centerX = window.innerWidth / 2;
 		const centerY = window.innerHeight / 2;
 
@@ -62,7 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		requestAnimationFrame(updateGlitterPositions);
 	}
 
-	updateGlitterPositions();
+	if (!isTouchDevice) {
+		updateGlitterPositions();
+	}
 
 	// Make capital letters significantly larger
 	const heading = document.querySelector('.hero h1');
@@ -127,8 +138,10 @@ document.addEventListener('DOMContentLoaded', () => {
 			setTimeout(() => {
 				el.classList.remove('card-visible');
 				el.style.opacity   = '1';
-				el.style.transform = 'perspective(500px) rotateX(0deg) rotateY(0deg) scale(1)';
-				el.setAttribute('data-tilt-ready', '1');
+				el.style.transform = 'translate(0, 0)';
+				if (!isTouchDevice) {
+					el.setAttribute('data-tilt-ready', '1');
+				}
 			}, readyAt);
 		});
 	}
@@ -139,108 +152,113 @@ document.addEventListener('DOMContentLoaded', () => {
 	if (heroCard && contentSection && siteShell) {
 		heroCard.style.cursor = 'pointer';
 
-		// ── 3D tilt ──
-		const MAX_TILT  = 14;        // degrees at the edge
-		const TILT_LERP = 0.07;     // lower = more lag / weight
-		let tiltTargetX = 0, tiltTargetY = 0;
-		let tiltCurrentX = 0, tiltCurrentY = 0;
-		let tiltLoopRunning = false;
+		if (!isTouchDevice) {
+			// ── 3D tilt ──
+			const MAX_TILT  = 14;        // degrees at the edge
+			const TILT_LERP = 0.07;     // lower = more lag / weight
+			let tiltTargetX = 0, tiltTargetY = 0;
+			let tiltCurrentX = 0, tiltCurrentY = 0;
+			let tiltLoopRunning = false;
 
-		function tiltLoop() {
-			tiltCurrentX += (tiltTargetX - tiltCurrentX) * TILT_LERP;
-			tiltCurrentY += (tiltTargetY - tiltCurrentY) * TILT_LERP;
-			heroCard.style.transform =
-				`perspective(900px) rotateX(${tiltCurrentX}deg) rotateY(${tiltCurrentY}deg) scale(1.02)`;
-			const stillMoving =
-				Math.abs(tiltTargetX - tiltCurrentX) > 0.02 ||
-				Math.abs(tiltTargetY - tiltCurrentY) > 0.02;
-			if (stillMoving) {
-				requestAnimationFrame(tiltLoop);
-			} else {
-				tiltLoopRunning = false;
-				// Snap exactly to target to avoid micro-drift
+			function tiltLoop() {
+				tiltCurrentX += (tiltTargetX - tiltCurrentX) * TILT_LERP;
+				tiltCurrentY += (tiltTargetY - tiltCurrentY) * TILT_LERP;
 				heroCard.style.transform =
-					`perspective(900px) rotateX(${tiltTargetX}deg) rotateY(${tiltTargetY}deg) scale(1.02)`;
-			}
-		}
-
-		function startTiltLoop() {
-			if (tiltLoopRunning) return;
-			tiltLoopRunning = true;
-			requestAnimationFrame(tiltLoop);
-		}
-
-		heroCard.addEventListener('mousemove', (e) => {
-			const rect = heroCard.getBoundingClientRect();
-			// Sheen
-			heroCard.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-			heroCard.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-			// Tilt: normalize mouse to -1..1 from card center
-			const nx = ((e.clientX - rect.left) / rect.width  - 0.5) * 2;
-			const ny = ((e.clientY - rect.top)  / rect.height - 0.5) * 2;
-			// rotateY: mouse right → right comes forward
-			// rotateX: mouse top  → top goes back (negative ny = positive rotateX)
-			tiltTargetY =  nx * MAX_TILT;
-			tiltTargetX = -ny * MAX_TILT;
-			startTiltLoop();
-		});
-		heroCard.addEventListener('mouseleave', () => {
-			heroCard.style.setProperty('--mouse-x', '-100%');
-			heroCard.style.setProperty('--mouse-y', '-100%');
-			// Return to flat
-			tiltTargetX = 0;
-			tiltTargetY = 0;
-			startTiltLoop();
-		});
-
-		// ── 3D tilt for info cards ──
-		const CARD_MAX_TILT  = 18;
-		const CARD_TILT_LERP = 0.07;
-		const tiltCards = [
-			document.querySelector('.card-toolbox'),
-			document.querySelector('.card-works'),
-			document.querySelector('.card-experience'),
-		].filter(Boolean);
-
-		tiltCards.forEach(card => {
-			let tx = 0, ty = 0, cx = 0, cy = 0, looping = false;
-			const hoverScale = card.classList.contains('card-works') ? 1 : 1.04;
-
-			function loop() {
-				cx += (tx - cx) * CARD_TILT_LERP;
-				cy += (ty - cy) * CARD_TILT_LERP;
-				card.style.transform =
-					`perspective(500px) rotateX(${cx}deg) rotateY(${cy}deg) scale(${hoverScale})`;
-				if (Math.abs(tx - cx) > 0.02 || Math.abs(ty - cy) > 0.02) {
-					requestAnimationFrame(loop);
+					`perspective(900px) rotateX(${tiltCurrentX}deg) rotateY(${tiltCurrentY}deg) scale(1.02)`;
+				const stillMoving =
+					Math.abs(tiltTargetX - tiltCurrentX) > 0.02 ||
+					Math.abs(tiltTargetY - tiltCurrentY) > 0.02;
+				if (stillMoving) {
+					requestAnimationFrame(tiltLoop);
 				} else {
-					looping = false;
-					card.style.transform =
-						`perspective(500px) rotateX(${tx}deg) rotateY(${ty}deg) scale(${tx === 0 && ty === 0 ? 1 : hoverScale})`;
+					tiltLoopRunning = false;
+					// Snap exactly to target to avoid micro-drift
+					heroCard.style.transform =
+						`perspective(900px) rotateX(${tiltTargetX}deg) rotateY(${tiltTargetY}deg) scale(1.02)`;
 				}
 			}
 
-			function start() {
-				if (!card.hasAttribute('data-tilt-ready')) return;
-				if (looping) return;
-				looping = true;
-				requestAnimationFrame(loop);
+			function startTiltLoop() {
+				if (tiltLoopRunning) return;
+				tiltLoopRunning = true;
+				requestAnimationFrame(tiltLoop);
 			}
 
-			card.addEventListener('mousemove', e => {
-				const r  = card.getBoundingClientRect();
-				const nx = ((e.clientX - r.left) / r.width  - 0.5) * 2;
-				const ny = ((e.clientY - r.top)  / r.height - 0.5) * 2;
-				ty =  nx * CARD_MAX_TILT;
-				tx = -ny * CARD_MAX_TILT;
-				start();
+			heroCard.addEventListener('mousemove', (e) => {
+				const rect = heroCard.getBoundingClientRect();
+				// Sheen
+				heroCard.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+				heroCard.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+				// Tilt: normalize mouse to -1..1 from card center
+				const nx = ((e.clientX - rect.left) / rect.width  - 0.5) * 2;
+				const ny = ((e.clientY - rect.top)  / rect.height - 0.5) * 2;
+				// rotateY: mouse right → right comes forward
+				// rotateX: mouse top  → top goes back (negative ny = positive rotateX)
+				tiltTargetY =  nx * MAX_TILT;
+				tiltTargetX = -ny * MAX_TILT;
+				startTiltLoop();
 			});
-			card.addEventListener('mouseleave', () => {
-				if (!card.hasAttribute('data-tilt-ready')) return;
-				tx = 0; ty = 0;
-				start();
+			heroCard.addEventListener('mouseleave', () => {
+				heroCard.style.setProperty('--mouse-x', '-100%');
+				heroCard.style.setProperty('--mouse-y', '-100%');
+				// Return to flat
+				tiltTargetX = 0;
+				tiltTargetY = 0;
+				startTiltLoop();
 			});
-		});
+
+			// ── 3D tilt for info cards ──
+			const CARD_MAX_TILT  = 18;
+			const CARD_TILT_LERP = 0.07;
+			const tiltCards = [
+				document.querySelector('.card-toolbox'),
+				document.querySelector('.card-works'),
+				document.querySelector('.card-experience'),
+			].filter(Boolean);
+
+			tiltCards.forEach(card => {
+				let tx = 0, ty = 0, cx = 0, cy = 0, looping = false;
+				const hoverScale = card.classList.contains('card-works') ? 1 : 1.04;
+
+				function loop() {
+					cx += (tx - cx) * CARD_TILT_LERP;
+					cy += (ty - cy) * CARD_TILT_LERP;
+					card.style.transform =
+						`perspective(500px) rotateX(${cx}deg) rotateY(${cy}deg) scale(${hoverScale})`;
+					if (Math.abs(tx - cx) > 0.02 || Math.abs(ty - cy) > 0.02) {
+						requestAnimationFrame(loop);
+					} else {
+						looping = false;
+						card.style.transform =
+							`perspective(500px) rotateX(${tx}deg) rotateY(${ty}deg) scale(${tx === 0 && ty === 0 ? 1 : hoverScale})`;
+					}
+				}
+
+				function start() {
+					if (!card.hasAttribute('data-tilt-ready')) return;
+					if (looping) return;
+					looping = true;
+					requestAnimationFrame(loop);
+				}
+
+				card.addEventListener('mousemove', e => {
+					const r  = card.getBoundingClientRect();
+					const nx = ((e.clientX - r.left) / r.width  - 0.5) * 2;
+					const ny = ((e.clientY - r.top)  / r.height - 0.5) * 2;
+					ty =  nx * CARD_MAX_TILT;
+					tx = -ny * CARD_MAX_TILT;
+					start();
+				});
+				card.addEventListener('mouseleave', () => {
+					if (!card.hasAttribute('data-tilt-ready')) return;
+					tx = 0; ty = 0;
+					start();
+				});
+			});
+		} else {
+			heroCard.style.setProperty('--mouse-x', '-100%');
+			heroCard.style.setProperty('--mouse-y', '-100%');
+		}
 
 		heroCard.addEventListener('click', () => {
 			if (isAnimating) return;
