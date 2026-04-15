@@ -422,9 +422,14 @@ document.addEventListener('DOMContentLoaded', () => {
 	const pieSlices = document.querySelectorAll('.pie-slice');
 	const expLabels = document.querySelectorAll('.exp-label');
 	const expTitle = document.querySelector('.experience-title');
+	const experienceContainer = document.querySelector('.experience-container');
 	
 	if (pieSlices.length > 0 && expTitle) {
 		const defaultText = expTitle.textContent;
+
+		function clearSliceHover() {
+			pieSlices.forEach(slice => slice.classList.remove('label-hover'));
+		}
 		
 		function showYears(category, years) {
 			expTitle.style.opacity = '0';
@@ -445,30 +450,54 @@ document.addEventListener('DOMContentLoaded', () => {
 			}, 150);
 			expLabels.forEach(label => label.classList.remove('active'));
 		}
+
+		function activateCategory(category) {
+			const slice = document.querySelector(`.pie-slice[data-category="${category}"]`);
+			if (!slice) return;
+
+			clearSliceHover();
+			slice.classList.add('label-hover');
+			showYears(category, slice.dataset.years);
+		}
+
+		function clearActiveCategory() {
+			clearSliceHover();
+			resetTitle();
+		}
 		
 		pieSlices.forEach(slice => {
 			slice.addEventListener('mouseenter', () => {
-				showYears(slice.dataset.category, slice.dataset.years);
+				activateCategory(slice.dataset.category);
 			});
-			slice.addEventListener('mouseleave', resetTitle);
+			slice.addEventListener('mouseleave', clearActiveCategory);
+			slice.addEventListener('click', event => {
+				event.preventDefault();
+				event.stopPropagation();
+				activateCategory(slice.dataset.category);
+			});
 		});
 		
 		expLabels.forEach(label => {
 			label.addEventListener('mouseenter', () => {
-				const slice = document.querySelector(`.pie-slice[data-category="${label.dataset.category}"]`);
-				if (slice) {
-					showYears(label.dataset.category, slice.dataset.years);
-					slice.classList.add('label-hover');
-				}
+				activateCategory(label.dataset.category);
 			});
 			label.addEventListener('mouseleave', () => {
-				const slice = document.querySelector(`.pie-slice[data-category="${label.dataset.category}"]`);
-				if (slice) {
-					slice.classList.remove('label-hover');
-				}
-				resetTitle();
+				clearActiveCategory();
+			});
+			label.addEventListener('click', event => {
+				event.preventDefault();
+				event.stopPropagation();
+				activateCategory(label.dataset.category);
 			});
 		});
+
+		if (experienceContainer) {
+			document.addEventListener('click', event => {
+				if (!experienceContainer.contains(event.target)) {
+					clearActiveCategory();
+				}
+			});
+		}
 	}
 
 	// ============================================
@@ -644,6 +673,14 @@ document.addEventListener('DOMContentLoaded', () => {
 				showCategoryText(slice.dataset.category);
 			});
 			slice.addEventListener('mouseleave', returnToOriginal);
+			slice.addEventListener('click', event => {
+				event.preventDefault();
+				event.stopPropagation();
+				if (transitionTimeout) {
+					clearTimeout(transitionTimeout);
+				}
+				showCategoryText(slice.dataset.category);
+			});
 		});
 		
 		// Add hover listeners to labels
@@ -655,7 +692,23 @@ document.addEventListener('DOMContentLoaded', () => {
 				showCategoryText(label.dataset.category);
 			});
 			label.addEventListener('mouseleave', returnToOriginal);
+			label.addEventListener('click', event => {
+				event.preventDefault();
+				event.stopPropagation();
+				if (transitionTimeout) {
+					clearTimeout(transitionTimeout);
+				}
+				showCategoryText(label.dataset.category);
+			});
 		});
+
+		if (experienceContainer) {
+			document.addEventListener('click', event => {
+				if (!experienceContainer.contains(event.target)) {
+					returnToOriginal();
+				}
+			});
+		}
 		
 		// ============================================
 		// AUTO-CYCLE THROUGH PIE SLICES
